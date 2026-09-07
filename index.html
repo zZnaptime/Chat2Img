@@ -341,16 +341,48 @@
       align-items: center;
       gap: 12px;
     }
+
     .range-row input[type="range"] {
       flex: 1;
+      min-width: 0;
+      width: 100%;
+      height: 22px;
+      padding: 0;
+      margin: 0;
       -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
+      border: 0 !important;
+      outline: 0 !important;
+      box-shadow: none !important;
+      border-radius: 0;
+      background: transparent;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-focus-ring-color: transparent;
+      touch-action: pan-y;
+    }
+
+    /* 모바일 Safari의 기본 포커스/탭 박스 제거 */
+    .range-row input[type="range"]:focus,
+    .range-row input[type="range"]:focus-visible,
+    .range-row input[type="range"]:active {
+      outline: 0 !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .range-row input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%;
       height: 6px;
-      background: linear-gradient(to right, #51aae1 0%, #51aae1 var(--val, 0%), #e2e8f0 var(--val, 0%), #e2e8f0 100%);
-      border-radius: 4px;
-      outline: none;
-      -webkit-tap-highlight-color: transparent; /* 👈 이 줄을 추가하세요 (모바일 터치 테두리 제거) */
+      border: 0;
+      border-radius: 999px;
+      box-shadow: none;
+      background: linear-gradient(to right,
+        #51aae1 0%,
+        #51aae1 var(--val, 0%),
+        #e2e8f0 var(--val, 0%),
+        #e2e8f0 100%);
     }
 
     .range-row input[type="range"]::-webkit-slider-thumb {
@@ -358,36 +390,64 @@
       appearance: none;
       width: 22px;
       height: 22px;
+      margin-top: -8px;
+      padding: 0;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23ffffff' stroke='%2351aae1' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      background-color: transparent !important; /* 👈 이 줄을 추가하세요 */
-      border: none; !important;
-      outline: none !important; /* 👈 outline 제거 */
+      background-color: transparent !important;
+      border: 0 !important;
+      outline: 0 !important;
+      box-shadow: none !important;
+      border-radius: 0;
       cursor: pointer;
       filter: drop-shadow(0 2px 4px rgba(81, 170, 225, 0.3));
       transition: transform 0.15s ease;
-      margin-top: 0;
+    }
+
+    .range-row input[type="range"]::-webkit-slider-thumb:active {
+      outline: 0 !important;
+      box-shadow: none !important;
+      border: 0 !important;
     }
 
     .range-row input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.15);
       filter: drop-shadow(0 3px 6px rgba(81, 170, 225, 0.45));
     }
+
     .range-row input[type="range"]::-webkit-slider-thumb:active {
       transform: scale(0.95);
+    }
+
+    .range-row input[type="range"]::-moz-range-track {
+      width: 100%;
+      height: 6px;
+      border: 0;
+      border-radius: 999px;
+      box-shadow: none;
+      background: #e2e8f0;
+    }
+
+    .range-row input[type="range"]::-moz-range-progress {
+      height: 6px;
+      border-radius: 999px;
+      background: #51aae1;
     }
 
     .range-row input[type="range"]::-moz-range-thumb {
       width: 22px;
       height: 22px;
+      padding: 0;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23ffffff' stroke='%2351aae1' stroke-width='2.2' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      background-color: transparent; !important; /* 👈 이 줄도 추가하세요 */
-      border: none;
+      background-color: transparent !important;
+      border: 0 !important;
+      outline: 0 !important;
+      box-shadow: none !important;
       cursor: pointer;
       filter: drop-shadow(0 2px 4px rgba(81, 170, 225, 0.3));
       transition: transform 0.15s ease;
@@ -397,6 +457,7 @@
       transform: scale(1.15);
       filter: drop-shadow(0 3px 6px rgba(81, 170, 225, 0.45));
     }
+
     .range-row input[type="range"]::-moz-range-thumb:active {
       transform: scale(0.95);
     }
