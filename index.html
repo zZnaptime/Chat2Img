@@ -995,7 +995,7 @@
         <textarea id="in-text">내용을 입력하세요! ( _ _)♡</textarea>
           
         <div class="chat-guide-tip" id="chat-syntax-guide" style="display:none;">
-          💡 <b>[1]~[6] 내용:</b> 프로필별 채팅 추가 / <b>[s] 내용:</b> 시스템 알림
+          💡 <b>[1]~[6]:</b> 프로필별 채팅 / <b>[-]:</b> 번역 / <b>[s]:</b> 시스템 알림
         </div>
           
       </div>
@@ -1422,7 +1422,8 @@
     `--YYYY년 MM월 DD일--
 [s] 윳! 님이 채팅방에 초대했습니다.
 [1] 채팅 모드입니다.
-[2] **굵은 글씨**나 ==#ffeb3b:형광펜==도 가능!`;
+[2] **굵은 글씨**나 ==#ffeb3b:형광펜==도 가능!
+[-] 원문 아래에 번역도 달 수 있어요`;
 
     const state = {
       mode: 'normal',
@@ -1986,13 +1987,24 @@
           return;
         }
 
+        // 숫자 없이 [-] 기호만 쓰면 바로 직전 대화의 번역문으로 자동 귀속
+        const transMatch = trimmed.match(/^\[-\]\s*(.+)$/);
+        if (transMatch) {
+          const lastItem = items[items.length - 1];
+          if (lastItem && lastItem.type === 'message') {
+            lastItem.transText = transMatch[1];
+            return;
+          }
+        }
+
         const msgMatch = trimmed.match(/^\[([1-6])\]\s*(.+)$/);
         if (msgMatch) {
           const pIndex = parseInt(msgMatch[1], 10) - 1;
           items.push({
             type: 'message',
             profileIdx: pIndex,
-            text: msgMatch[2]
+            text: msgMatch[2],
+            transText: null
           });
           return;
         }
@@ -2000,7 +2012,8 @@
         items.push({
           type: 'message',
           profileIdx: 0,
-          text: trimmed
+          text: trimmed,
+          transText: null
         });
       });
 
@@ -2035,17 +2048,28 @@
         } else if (item.type === 'message') {
           const prof = state.profiles[item.profileIdx] || state.profiles[0];
           
-          // 디스코드 모드는 넓은 가로폭 사용
           const effectiveMaxW = (state.chatTheme === 'discord') 
             ? (containerW - (prof.showAvatar ? avatarSize + 16 : 0) - 20)
             : (maxBubbleW - (bubblePadX * 2));
 
+          // 1. 원문 줄바꿈 계산
           const lines = tokenizeRunsToLines(item.text, fontSize, fontFam, letterSpacing, effectiveMaxW);
-          
           let maxLineWidth = 0;
           lines.forEach(l => { if (l.width > maxLineWidth) maxLineWidth = l.width; });
+
+          // 2. 번역문 줄바꿈 계산 (폰트 크기 82%)
+          const transFs = Math.max(11, Math.round(fontSize * 0.82));
+          let transLines = [];
+          let transBlockH = 0;
+          const transGap = Math.round(fontSize * 0.32); // 원문과 번역문 사이 간격
+
+          if (item.transText) {
+            transLines = tokenizeRunsToLines(item.transText, transFs, fontFam, letterSpacing, effectiveMaxW);
+            transLines.forEach(l => { if (l.width > maxLineWidth) maxLineWidth = l.width; });
+            transBlockH = transGap + (transLines.length * transFs) + ((transLines.length - 1) * (transFs * (lineHeightMult - 1)));
+          }
           
-          const textBlockH = (lines.length * fontSize) + ((lines.length - 1) * lineSpacing);
+          const textBlockH = (lines.length * fontSize) + ((lines.length - 1) * lineSpacing) + transBlockH;
           let bubbleW, bubbleH, blockH;
 
           if (state.chatTheme === 'discord') {
@@ -2054,7 +2078,6 @@
             const contentH = nameHeaderH + textBlockH;
             blockH = prof.showAvatar ? Math.max(contentH, avatarSize) : contentH;
           } else {
-            // 카톡 & 단말기
             bubbleW = Math.max(fontSize * 1.4, maxLineWidth + (bubblePadX * 2));
             bubbleH = textBlockH + (bubblePadY * 2);
             const contentH = nameHeaderH + bubbleH;
@@ -2065,6 +2088,9 @@
             type: 'message',
             prof,
             lines,
+            transLines,
+            transFs,
+            transGap,
             bubbleW,
             bubbleH,
             blockH,
@@ -2410,7 +2436,6 @@
             const isDate = b.type === 'date';
 
             if (state.chatTheme === 'discord') {
-              // 디스코드 스타일: 얇은 가로 구분선 + 중앙 텍스트
               ctx.save();
               ctx.strokeStyle = hexToRgba(state.ink, 0.15);
               ctx.lineWidth = 1;
@@ -2428,7 +2453,6 @@
               ctx.fillText(b.text, cx, curY + (b.h / 2));
               ctx.restore();
             } else if (state.chatTheme === 'terminal') {
-              // 요원 단말기: 각진 브래킷 HUD 태그
               const tagText = isDate ? `[DATE // ${b.text}]` : `[ ! SYSTEM: ${b.text} ]`;
               ctx.save();
               ctx.font = `700 ${b.fontSize}px "${state.font}"`;
@@ -2440,7 +2464,6 @@
               ctx.fillText(tagText, cx, curY + (b.h / 2));
               ctx.restore();
             } else {
-              // 카카오톡 기본: 반투명 둥근 캡슐
               drawRoundRect(cx - (b.w / 2), curY, b.w, b.h, b.h / 2, isDate ? 'rgba(0, 0, 0, 0.16)' : 'rgba(0, 0, 0, 0.13)', null, 0);
               ctx.fillStyle = '#ffffff';
               ctx.font = `${isDate ? '600' : '500'} ${b.fontSize}px "${state.font}"`;
@@ -2455,9 +2478,54 @@
           else if (b.type === 'message') {
             const isRight = b.prof.align === 'right';
 
-            // ----------------------------------------------------
-            // A. 디스코드 스타일 테마
-            // ----------------------------------------------------
+            // 텍스트 런들을 그려주는 공통 헬퍼
+            const drawRunList = (runsList, startX, startCenterY, currentFs, currentSpacing, textColor, alpha = 1.0) => {
+              let lineY = startCenterY;
+              runsList.forEach(line => {
+                let curX = startX;
+                line.runs.forEach(run => {
+                  ctx.font = run.fontStr;
+
+                  if (run.mark) {
+                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48 * alpha);
+                    ctx.fillRect(curX - 1, lineY - (currentFs * 0.55), run.width + 2, currentFs * 1.15);
+                  }
+
+                  ctx.fillStyle = hexToRgba(textColor, alpha);
+                  let drawCharX = curX;
+                  for (let c = 0; c < run.text.length; c++) {
+                    const ch = run.text[c];
+                    ctx.fillText(ch, drawCharX, lineY);
+                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
+                  }
+
+                  if (run.strike) {
+                    ctx.strokeStyle = hexToRgba(textColor, alpha);
+                    ctx.lineWidth = Math.max(1.2, currentFs * 0.08);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, lineY);
+                    ctx.lineTo(curX + run.width, lineY);
+                    ctx.stroke();
+                  }
+                    
+                  if (run.underline) {
+                    ctx.strokeStyle = hexToRgba(textColor, alpha);
+                    ctx.lineWidth = Math.max(1.5, currentFs * 0.08);
+                    ctx.beginPath();
+                    const underlineY = lineY + (currentFs * 0.52);
+                    ctx.moveTo(curX, underlineY);
+                    ctx.lineTo(curX + run.width, underlineY);
+                    ctx.stroke();
+                  }
+                    
+                  curX += run.width;
+                });
+                lineY += currentFs + currentSpacing;
+              });
+              return lineY;
+            };
+
+            // A. 디스코드 테마
             if (state.chatTheme === 'discord') {
               let textLeft = contentX;
               if (b.prof.showAvatar) {
@@ -2465,7 +2533,6 @@
                 textLeft += b.avatarSize + 14;
               }
 
-              // 닉네임 + 타임스탬프
               ctx.save();
               ctx.font = `700 ${b.nameFontSize}px "${state.font}"`;
               ctx.fillStyle = b.prof.textColor;
@@ -2479,58 +2546,27 @@
               ctx.fillText('오늘', textLeft + nWidth + 8, curY + 2);
               ctx.restore();
 
-              // 본문 텍스트 (말풍선 없이 플랫하게)
-              let lineCenterY = curY + b.nameHeaderH + (effFontSize / 2);
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
 
-              b.lines.forEach(line => {
-                let curX = textLeft;
-                line.runs.forEach(run => {
-                  ctx.font = run.fontStr;
-                  if (run.mark) {
-                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
-                    ctx.fillRect(curX - 1, lineCenterY - (effFontSize * 0.55), run.width + 2, effFontSize * 1.1);
-                  }
-                  ctx.fillStyle = b.prof.textColor;
-                  let drawCharX = curX;
-                  for (let c = 0; c < run.text.length; c++) {
-                    const ch = run.text[c];
-                    ctx.fillText(ch, drawCharX, lineCenterY);
-                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-                  }
-                  if (run.strike) {
-                    ctx.strokeStyle = b.prof.textColor;
-                    ctx.lineWidth = Math.max(1.2, effFontSize * 0.08);
-                    ctx.beginPath();
-                    ctx.moveTo(curX, lineCenterY);
-                    ctx.lineTo(curX + run.width, lineCenterY);
-                    ctx.stroke();
-                  }
-                  if (run.underline) {
-                    ctx.strokeStyle = b.prof.textColor;
-                    ctx.lineWidth = Math.max(1.5, effFontSize * 0.08);
-                    ctx.beginPath();
-                    ctx.moveTo(curX, lineCenterY + (effFontSize * 0.52));
-                    ctx.lineTo(curX + run.width, lineCenterY + (effFontSize * 0.52));
-                    ctx.stroke();
-                  }
-                  curX += run.width;
-                });
-                lineCenterY += effFontSize + b.lineSpacing;
-              });
+              // 원문 렌더링
+              let nextLineY = drawRunList(b.lines, textLeft, curY + b.nameHeaderH + (effFontSize / 2), effFontSize, b.lineSpacing, b.prof.textColor, 1.0);
+
+              // 번역문 렌더링 (오퍼시티 0.68)
+              if (b.transLines && b.transLines.length > 0) {
+                let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
+                drawRunList(b.transLines, textLeft, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.68);
+              }
+
               curY += b.blockH + 28;
             }
 
-            // ----------------------------------------------------
-            // B. 카카오톡 & 요원 단말기 스타일 테마
-            // ----------------------------------------------------
+            // B. 카카오톡 & 요원 단말기 테마
             else {
               const isTerminal = state.chatTheme === 'terminal';
               let bx, by;
 
               if (isRight) {
-                // 우측 정렬
                 let rightEdge = contentX + contentW;
                 if (b.prof.showAvatar) {
                   drawAvatar(b.prof.avatarImg, rightEdge - b.avatarSize, curY, b.avatarSize);
@@ -2546,7 +2582,6 @@
                 bx = rightEdge - b.bubbleW;
                 by = curY + b.nameHeaderH;
               } else {
-                // 좌측 정렬
                 let leftEdge = contentX;
                 if (b.prof.showAvatar) {
                   drawAvatar(b.prof.avatarImg, leftEdge, curY, b.avatarSize);
@@ -2563,65 +2598,27 @@
                 by = curY + b.nameHeaderH;
               }
 
-              // 테마별 말풍선 외형 그리기
               if (isTerminal) {
-                // 단말기: 테두리와 측면 인디케이터 바가 전체 글자색(state.ink)을 그대로 반영
                 drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 0, b.prof.bubbleBg, hexToRgba(state.ink, 0.4), 1.5);
                 ctx.save();
-                ctx.fillStyle = state.ink; // ← 글자색(state.ink)과 완벽 동기화
+                ctx.fillStyle = state.ink;
                 ctx.fillRect(isRight ? bx + b.bubbleW - 4 : bx, by, 4, b.bubbleH);
                 ctx.restore();
               } else {
-                // 카카오톡: 부드러운 둥근 말풍선
                 drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 14, b.prof.bubbleBg, 'rgba(0,0,0,0.06)', 1);
               }
 
-              // 말풍선 내부 글자 출력
-              let lineCenterY = by + b.bubblePadY + (effFontSize / 2);
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
 
-              b.lines.forEach(line => {
-                let curX = bx + b.bubblePadX;
-                line.runs.forEach(run => {
-                  ctx.font = run.fontStr;
+              // 원문 렌더링
+              let nextLineY = drawRunList(b.lines, bx + b.bubblePadX, by + b.bubblePadY + (effFontSize / 2), effFontSize, b.lineSpacing, b.prof.textColor, 1.0);
 
-                  if (run.mark) {
-                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
-                    ctx.fillRect(curX - 1, lineCenterY - (effFontSize * 0.55), run.width + 2, effFontSize * 1.15);
-                  }
-
-                  ctx.fillStyle = b.prof.textColor;
-                  let drawCharX = curX;
-                  for (let c = 0; c < run.text.length; c++) {
-                    const ch = run.text[c];
-                    ctx.fillText(ch, drawCharX, lineCenterY);
-                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-                  }
-
-                  if (run.strike) {
-                    ctx.strokeStyle = b.prof.textColor;
-                    ctx.lineWidth = Math.max(1.2, effFontSize * 0.08);
-                    ctx.beginPath();
-                    ctx.moveTo(curX, lineCenterY);
-                    ctx.lineTo(curX + run.width, lineCenterY);
-                    ctx.stroke();
-                  }
-                    
-                  if (run.underline) {
-                    ctx.strokeStyle = b.prof.textColor;
-                    ctx.lineWidth = Math.max(1.5, effFontSize * 0.08);
-                    ctx.beginPath();
-                    const underlineY = lineCenterY + (effFontSize * 0.52);
-                    ctx.moveTo(curX, underlineY);
-                    ctx.lineTo(curX + run.width, underlineY);
-                    ctx.stroke();
-                  }
-                    
-                  curX += run.width;
-                });
-                lineCenterY += effFontSize + b.lineSpacing;
-              });
+              // 번역문 렌더링 (폰트 82%, 오퍼시티 0.68)
+              if (b.transLines && b.transLines.length > 0) {
+                let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
+                drawRunList(b.transLines, bx + b.bubblePadX, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.68);
+              }
 
               curY += b.blockH + 10;
             }
