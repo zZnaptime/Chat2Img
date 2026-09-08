@@ -100,6 +100,39 @@
       filter: drop-shadow(0 3px 6px rgba(81, 170, 225, 0.35));
     }
 
+    /* 상단 모드 전환 탭 (일반 모드 / 채팅 모드) */
+    .mode-tab-bar {
+      display: flex;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 12px;
+      gap: 6px;
+    }
+    .mode-tab-btn {
+      flex: 1;
+      padding: 9px 0;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mode-tab-btn:hover { color: #1e293b; }
+    .mode-tab-btn.on {
+      background: #ffffff;
+      color: #51aae1;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
     /* 패널 카드 */
     .panel-card {
       display: flex;
@@ -162,7 +195,6 @@
     }
 
     /* 포맷 툴바 & 플랫 버튼 */
-    /* 본문 라벨↔툴바 간격은 유지하고, 툴바↔입력창 사이 gap만 상쇄 */
     .text-editor-group {
       gap: 7px;
     }
@@ -173,12 +205,13 @@
     .fmt-toolbar-standalone {
       display: flex;
       align-items: center;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 5px;
       background: #f1f7fa;
       border: 1.5px solid #e2e8f0;
       border-bottom: none;
       border-radius: 10px 10px 0 0;
-      padding: 5px 10px;
+      padding: 6px 10px;
       width: 100%;
     }
     .fmt-btn {
@@ -202,6 +235,18 @@
     .fmt-btn:hover { 
       color: #1e3a4c;
       background: rgba(81, 170, 225, 0.15) !important;
+    }
+
+    .fmt-badge-btn {
+      background: #e2eef7 !important;
+      color: #3b7b9f !important;
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 6px;
+    }
+    .fmt-badge-btn:hover {
+      background: #cce4f5 !important;
+      color: #245775 !important;
     }
 
     .hl-wrap-simple {
@@ -370,7 +415,6 @@
       touch-action: pan-y;
     }
 
-    /* 모바일 Safari의 기본 포커스/탭 박스 제거 */
     .range-row input[type="range"]:focus,
     .range-row input[type="range"]:focus-visible,
     .range-row input[type="range"]:active {
@@ -414,12 +458,6 @@
       transition: transform 0.15s ease;
     }
 
-    .range-row input[type="range"]::-webkit-slider-thumb:active {
-      outline: 0 !important;
-      box-shadow: none !important;
-      border: 0 !important;
-    }
-
     .range-row input[type="range"]::-webkit-slider-thumb:hover {
       transform: scale(1.15);
       filter: drop-shadow(0 3px 6px rgba(81, 170, 225, 0.45));
@@ -427,6 +465,9 @@
 
     .range-row input[type="range"]::-webkit-slider-thumb:active {
       transform: scale(0.95);
+      outline: 0 !important;
+      box-shadow: none !important;
+      border: 0 !important;
     }
 
     .range-row input[type="range"]::-moz-range-track {
@@ -578,6 +619,33 @@
       background: #f0f7fb;
     }
 
+    /* 프로필 설정 컬러 픽업 */
+    .profile-sub-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+    .profile-color-pair {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #475569;
+    }
+    .profile-color-pair input[type="color"] {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
     /* 다운로드 버튼 */
     .save-btn {
       margin-top: -4px;
@@ -715,7 +783,7 @@
         border: 1.5px solid #51aae1 !important;
         color: #fff !important;
         font-size: 10px !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -784,14 +852,12 @@
       to { transform: scale(1) translateY(0); opacity: 1; }
     }
 
-    /* 둥실둥실 폭을 줄여 자연스럽고 부드럽게 */
     @keyframes modalSyringeFloat {
       0% { transform: translateY(0) rotate(-14deg); }
       50% { transform: translateY(-4px) rotate(-10deg); }
       100% { transform: translateY(2px) rotate(-16deg); }
     }
 
-    /* 원형 베이스와 주사기 크기를 큼직하게 확대 */
     .modal-syringe-wrap {
       width: 110px;
       height: 110px;
@@ -808,9 +874,25 @@
     .modal-syringe-svg {
       width: 90px;
       height: 90px;
-      margin-top: 8px; /* 아래로 살짝 내려서 원 중앙에 맞춤 */
+      margin-top: 8px;
       animation: modalSyringeFloat 3.2s ease-in-out infinite alternate;
       filter: drop-shadow(0 5px 10px rgba(81, 170, 225, 0.45));
+    }
+      
+    /* 채팅 모드 전용 가이드 팁 블럭 */
+    .chat-guide-tip {
+      background: #eef7fc;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 11.5px;
+      color: #517a94;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      margin-top: 4px;
+    }
+    .chat-guide-tip b {
+      color: #316888;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -874,19 +956,26 @@
       <span>윳! <span style="background: rgba(81,170,225,0.5)">채팅</span> 발췌기</span>
     </h1>
 
+    <!-- 0. 모드 선택 탭 (일반 모드 / 채팅 모드) -->
+    <div class="mode-tab-bar" id="mode-tab-bar">
+      <button type="button" class="mode-tab-btn on" data-mode="normal">📖 일반 모드</button>
+      <button type="button" class="mode-tab-btn" data-mode="chat">💬 채팅 모드</button>
+    </div>
+
     <!-- 1. 본문 & 삽입 이미지 그룹 -->
     <section class="panel-card">
       <div class="panel-card-title">✦ 본문 및 이미지</div>
 
       <div class="field-group text-editor-group">
         <div class="label-header-row">
-          <span class="label-sub">본문 내용</span>
+          <span class="label-sub" id="text-field-label">본문 내용</span>
           <button type="button" class="btn-clear-text" id="btn-clear-text" title="본문 전체 지우기">삭제</button>
         </div>
         
         <div class="fmt-toolbar-standalone">
           <button class="fmt-btn" id="fmt-bold" title="굵게 (토글 가능)">B</button>
           <button class="fmt-btn" id="fmt-italic" title="기울임 (토글 가능)" style="font-style: italic;">/</button>
+          <button class="fmt-btn" id="fmt-underline" title="밑줄 (토글 가능)" style="text-decoration: underline;">U</button>
           <button class="fmt-btn" id="fmt-strike" title="취소선 (토글 가능)" style="text-decoration: line-through;">S</button>
           
           <div class="hl-wrap-simple">
@@ -895,62 +984,143 @@
           </div>
 
           <button class="fmt-btn" id="fmt-quote" title="인용구 추가/제거" style="font-size: 11.5px;">❝ 인용</button>
+
+          <!-- 채팅 모드 전용 퀵 삽입 버튼 -->
+          <div id="chat-quick-tools" style="display:none; align-items:center; gap:4px; margin-left:auto;">
+            <button class="fmt-btn fmt-badge-btn" id="btn-quick-date" title="날짜 구분선 추가">📅 날짜</button>
+            <button class="fmt-btn fmt-badge-btn" id="btn-quick-system" title="시스템 메시지 추가">🔔 알림</button>
+          </div>
         </div>
 
         <textarea id="in-text">내용을 입력하세요! ( _ _)♡</textarea>
+          
+        <div class="chat-guide-tip" id="chat-syntax-guide" style="display:none;">
+          💡 <b>[1]~[6] 내용:</b> 프로필별 채팅 추가 / <b>[s] 내용:</b> 시스템 알림
+        </div>
+          
       </div>
 
-      <div class="panel-divider"></div>
+      <!-- 일반 모드 전용: 본문 이미지 삽입 영역 -->
+      <div id="normal-insert-group">
+        <div class="panel-divider"></div>
 
-      <div class="field-group">
-        <div class="toggle-row" id="tog-insert">
-          <div class="sw-track"></div>
-          <span class="toggle-label">본문 이미지 삽입</span>
+        <div class="field-group">
+          <div class="toggle-row" id="tog-insert">
+            <div class="sw-track"></div>
+            <span class="toggle-label">본문 이미지 삽입</span>
+          </div>
+
+          <div id="insert-controls" style="display:none; flex-direction:column; gap:10px; margin-top:6px; background:var(--bg-editor-sub); padding:14px; border-radius:10px; border:1.5px solid var(--border-accent);">
+            <label class="file-dropzone" for="in-insert-file">
+              <span id="insert-file-name">＋ 이미지 선택</span>
+              <input type="file" id="in-insert-file" accept="image/*" style="display:none;">
+            </label>
+
+            <span style="font-size:11.5px; color:var(--text-sub); margin-top:2px;">*미리보기 화면을 드래그하여 사진 위치를 이동할 수 있습니다.</span>
+
+            <div class="range-row" style="margin-top:2px;">
+              <span style="width:50px; text-align:left; font-size:12px; color:var(--text-sub);">확대</span>
+              <input type="range" id="in-insert-zoom" min="100" max="250" value="100">
+              <span id="insert-zoom-val">100%</span>
+            </div>
+
+            <div class="seg-buttons" id="insert-pos-group">
+              <button data-pos="top" class="on">↑</button>
+              <button data-pos="bottom">↓</button>
+              <button data-pos="left">←</button>
+              <button data-pos="right">→</button>
+            </div>
+
+            <span class="label-sub">이미지 영역 (높이/너비)</span>
+            <div class="range-row">
+              <input type="range" id="in-insert-size" min="150" max="650" step="10" value="380">
+              <span id="insert-size-val">380px</span>
+            </div>
+
+            <span class="label-sub">모서리 둥글기</span>
+            <div class="range-row">
+              <input type="range" id="in-insert-radius" min="0" max="40" step="2" value="16">
+              <span id="insert-radius-val">16px</span>
+            </div>
+
+            <span class="label-sub">본문 사이 간격</span>
+            <div class="range-row">
+              <input type="range" id="in-insert-gap" min="10" max="60" step="5" value="30">
+              <span id="insert-gap-val">30px</span>
+            </div>
+
+            <span class="label-sub">테두리</span>
+            <div class="range-row">
+              <input type="range" id="in-insert-border" min="0" max="6" step="1" value="1">
+              <span id="insert-border-val">1px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-B. 채팅 모드 전용: 프로필 설정 (최대 6명) -->
+    <section class="panel-card" id="chat-profiles-panel" style="display:none;">
+        
+      <div class="field-group" style="margin-bottom: 2px;">
+        <span class="label-sub">채팅 스타일 테마</span>
+        <div class="seg-buttons" id="chat-theme-group">
+          <button data-theme="kakao" class="on">메신저</button>
+          <button data-theme="discord">타임라인</button>
+          <button data-theme="terminal">단말기</button>
+        </div>
+      </div>
+      <div class="panel-divider"></div>
+        
+      <div class="panel-card-title">✦ 채팅 프로필 설정 (최대 6명)</div>
+      
+      <div class="seg-buttons" id="chat-profile-tabs">
+        <button data-p="0" class="on">P1</button>
+        <button data-p="1">P2</button>
+        <button data-p="2">P3</button>
+        <button data-p="3">P4</button>
+        <button data-p="4">P5</button>
+        <button data-p="5">P6</button>
+      </div>
+
+      <div id="profile-editor-container" style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div class="field-group">
+          <div class="label-header-row">
+            <span class="label-sub" id="cur-profile-title">프로필 [1] 이름</span>
+            <span style="background:#51aae1; color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:6px;" id="cur-profile-code">[1]</span>
+          </div>
+          <input type="text" id="in-p-name" placeholder="표시할 닉네임 입력">
         </div>
 
-        <div id="insert-controls" style="display:none; flex-direction:column; gap:10px; margin-top:6px; background:var(--bg-editor-sub); padding:14px; border-radius:10px; border:1.5px solid var(--border-accent);">
-          <label class="file-dropzone" for="in-insert-file">
-            <span id="insert-file-name">＋ 이미지 선택</span>
-            <input type="file" id="in-insert-file" accept="image/*" style="display:none;">
-          </label>
-
-          <span style="font-size:11.5px; color:var(--text-sub); margin-top:2px;">*미리보기 화면을 드래그하여 사진 위치를 이동할 수 있습니다.</span>
-
-          <div class="range-row" style="margin-top:2px;">
-            <span style="width:50px; text-align:left; font-size:12px; color:var(--text-sub);">확대</span>
-            <input type="range" id="in-insert-zoom" min="100" max="250" value="100">
-            <span id="insert-zoom-val">100%</span>
+        <div class="field-group">
+          <span class="label-sub">채팅 정렬 위치</span>
+          <div class="seg-buttons" id="p-align-group">
+            <button data-align="left">←</button>
+            <button data-align="right" class="on">→</button>
           </div>
+        </div>
 
-          <div class="seg-buttons" id="insert-pos-group">
-            <button data-pos="top" class="on">↑</button>
-            <button data-pos="bottom">↓</button>
-            <button data-pos="left">←</button>
-            <button data-pos="right">→</button>
+        <div class="field-group">
+          <div class="toggle-row on" id="tog-p-avatar">
+            <div class="sw-track"></div>
+            <span class="toggle-label">프로필 사진</span>
           </div>
-
-          <span class="label-sub">이미지 영역 (높이/너비)</span>
-          <div class="range-row">
-            <input type="range" id="in-insert-size" min="150" max="650" step="10" value="380">
-            <span id="insert-size-val">380px</span>
+          <div id="p-avatar-box" style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            <label class="file-dropzone" for="in-p-file">
+              <span id="p-avatar-filename">＋ 프로필 사진 선택</span>
+              <input type="file" id="in-p-file" accept="image/*" style="display:none;">
+            </label>
           </div>
+        </div>
 
-          <span class="label-sub">모서리 둥글기</span>
-          <div class="range-row">
-            <input type="range" id="in-insert-radius" min="0" max="40" step="2" value="16">
-            <span id="insert-radius-val">16px</span>
+        <div class="profile-sub-row">
+          <div class="profile-color-pair">
+            <span>말풍선색</span>
+            <input type="color" id="in-p-bubble-bg" value="#fae100">
           </div>
-
-          <span class="label-sub">본문 사이 간격</span>
-          <div class="range-row">
-            <input type="range" id="in-insert-gap" min="10" max="60" step="5" value="30">
-            <span id="insert-gap-val">30px</span>
-          </div>
-
-          <span class="label-sub">테두리</span>
-          <div class="range-row">
-            <input type="range" id="in-insert-border" min="0" max="6" step="1" value="1">
-            <span id="insert-border-val">1px</span>
+          <div class="profile-color-pair">
+            <span>글자색</span>
+            <input type="color" id="in-p-text-color" value="#371d1e">
           </div>
         </div>
       </div>
@@ -975,8 +1145,8 @@
 
       <div class="field-group">
         <span class="label-sub">크레딧 정보 입력</span>
-        <input type="text" id="in-char" placeholder="캐릭터명 또는 작품명 (예: 퓨어, ARCH)">
-        <input type="text" id="in-creator" placeholder="제작자 (예: @zZnaptime)" style="margin-top:2px;">
+        <input type="text" id="in-char" placeholder="캐릭터명 또는 작품명 (예: 윳!)">
+        <input type="text" id="in-creator" placeholder="제작자 (예: @ID)" style="margin-top:2px;">
         
         <span class="label-sub" style="margin-top:4px;">크레딧 배치</span>
         <div class="seg-buttons" id="credplace-group">
@@ -1167,7 +1337,7 @@
     </button>
   </div>
 
-  <!-- 둥실둥실 주사기 복원 안내 커스텀 모달 -->
+  <!-- [기존 원본 주사기 SVG 100% 보존] 복원 모달 -->
   <div id="restore-modal">
     <div class="restore-card">
       <div class="modal-syringe-wrap">
@@ -1238,7 +1408,25 @@
     const canvas = document.getElementById('card-canvas');
     const ctx = canvas.getContext('2d');
 
+    const defaultProfiles = [
+      { name: 'A', align: 'right', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#fae100', textColor: '#371d1e' },
+      { name: 'B', align: 'left', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#ffffff', textColor: '#191919' },
+      { name: 'C', align: 'left', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#ffffff', textColor: '#191919' },
+      { name: 'D', align: 'left', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#ffffff', textColor: '#191919' },
+      { name: 'E', align: 'left', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#ffffff', textColor: '#191919' },
+      { name: 'F', align: 'left', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#ffffff', textColor: '#191919' }
+    ];
+
+    const sampleNormalText = "내용을 입력하세요! ( _ _)♡";
+    const sampleChatText = 
+    `--YYYY년 MM월 DD일--
+[s] 윳! 님이 채팅방에 초대했습니다.
+[1] 채팅 모드입니다.
+[2] **굵은 글씨**나 ==#ffeb3b:형광펜==도 가능!`;
+
     const state = {
+      mode: 'normal',
+      chatTheme: 'kakao', // 'kakao' | 'discord' | 'terminal'
       text: document.getElementById('in-text').value,
       showTitle: false,
       title: '',
@@ -1276,18 +1464,21 @@
       insertPosX: 0,
       insertPosY: 0,
       bgImgData: null,     // 배경 이미지 Base64 저장용
-      insertImgData: null  // 본문 삽입 이미지 Base64 저장용
+      insertImgData: null,  // 본문 삽입 이미지 Base64 저장용
+      currentProfileIdx: 0,
+      profiles: JSON.parse(JSON.stringify(defaultProfiles))
     };
 
     // ==========================================
-    // 로컬 스토리지 상태 저장 및 복원
+    // 로컬 스토리지 상태 저장 및 복원 (원본 구조 100% 보존)
     // ==========================================
     const STORAGE_KEY = 'yusi_card_maker_state';
 
     function saveToStorage() {
-      const dataToSave = { ...state };
+      const dataToSave = JSON.parse(JSON.stringify(state));
       delete dataToSave.bgImg;
       delete dataToSave.insertImg;
+      dataToSave.profiles.forEach(p => { delete p.avatarImg; });
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
       } catch (e) {
@@ -1295,6 +1486,7 @@
         try {
           delete dataToSave.bgImgData;
           delete dataToSave.insertImgData;
+          dataToSave.profiles.forEach(p => { delete p.avatarData; });
           localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
         } catch (err) {
           console.warn('로컬 저장소 저장 불가:', err);
@@ -1306,6 +1498,42 @@
     function scheduleSave() {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => saveToStorage(), 250);
+    }
+
+    function syncModeUI() {
+      document.querySelectorAll('#mode-tab-bar .mode-tab-btn').forEach(btn => {
+        btn.classList.toggle('on', btn.dataset.mode === state.mode);
+      });
+      const isChat = state.mode === 'chat';
+      document.getElementById('chat-profiles-panel').style.display = isChat ? 'flex' : 'none';
+      document.getElementById('chat-quick-tools').style.display = isChat ? 'flex' : 'none';
+      document.getElementById('chat-syntax-guide').style.display = isChat ? 'block' : 'none'; // ← 이 줄 추가
+      document.getElementById('normal-insert-group').style.display = isChat ? 'none' : 'block';
+      document.getElementById('text-field-label').innerText = isChat ? '채팅 대화 내용' : '본문 내용';
+      syncCurrentProfileUI();
+    }
+
+    function syncCurrentProfileUI() {
+      const idx = state.currentProfileIdx;
+      const p = state.profiles[idx];
+      document.querySelectorAll('#chat-profile-tabs button').forEach((b, i) => {
+        b.classList.toggle('on', i === idx);
+      });
+      document.getElementById('cur-profile-title').innerText = `프로필 [${idx + 1}] 이름`;
+      document.getElementById('cur-profile-code').innerText = `[${idx + 1}]`;
+      document.getElementById('in-p-name').value = p.name;
+      
+      document.querySelectorAll('#p-align-group button').forEach(b => {
+        b.classList.toggle('on', b.dataset.align === p.align);
+      });
+
+      const togAvatar = document.getElementById('tog-p-avatar');
+      togAvatar.classList.toggle('on', p.showAvatar);
+      document.getElementById('p-avatar-box').style.display = p.showAvatar ? 'flex' : 'none';
+      document.getElementById('p-avatar-filename').innerText = p.avatarData ? '프로필 사진 (선택됨)' : '＋ 프로필 사진 선택';
+
+      document.getElementById('in-p-bubble-bg').value = p.bubbleBg;
+      document.getElementById('in-p-text-color').value = p.textColor;
     }
 
     function loadFromStorage(callback) {
@@ -1394,12 +1622,17 @@
         syncGroup('frame-group', 'frame', state.frameStyle);
         syncGroup('insert-pos-group', 'pos', state.insertPos);
         syncGroup('bgtype-group', 'bgtype', state.bgType);
+          
+        state.chatTheme = state.chatTheme || 'kakao';
+        syncGroup('chat-theme-group', 'theme', state.chatTheme);
 
         document.getElementById('corner-icon-row').style.display = state.frameStyle === 'corner' ? 'flex' : 'none';
         document.getElementById('solid-controls').style.display = state.bgType === 'solid' ? 'flex' : 'none';
         document.getElementById('image-controls').style.display = state.bgType === 'image' ? 'flex' : 'none';
 
-        // 비동기 이미지 로딩 동기화 처리 (로딩 완료 후 최종 1회 콜백)
+        syncModeUI();
+
+        // 비동기 이미지 로딩 동기화 처리
         let pendingImages = 0;
         const checkDone = () => {
           pendingImages--;
@@ -1429,6 +1662,19 @@
           insertImgObj.src = state.insertImgData;
           document.getElementById('insert-file-name').innerText = '삽입 이미지 (복원됨)';
         }
+
+        state.profiles.forEach(p => {
+          if (p.avatarData) {
+            pendingImages++;
+            const aImg = new Image();
+            aImg.onload = () => {
+              p.avatarImg = aImg;
+              checkDone();
+            };
+            aImg.onerror = checkDone;
+            aImg.src = p.avatarData;
+          }
+        });
 
         if (pendingImages === 0 && callback) {
           callback();
@@ -1508,11 +1754,11 @@
       state.insertPosY = Math.max(-maxY, Math.min(maxY, state.insertPosY));
     }
 
-    // 중첩 재귀 마크다운 파서 (형광펜, 볼드, 이탤릭, 취소선 완벽 상속)
-    function parseFormattedText(text, currentStyle = { bold: false, italic: false, strike: false, mark: false, markColor: null }) {
+    // 중첩 재귀 마크다운 파서 (형광펜 + 밑줄 동시 중첩 완벽 지원)
+    function parseFormattedText(text, currentStyle = { bold: false, italic: false, underline: false, strike: false, mark: false, markColor: null }) {
       if (!text) return [];
       const tokens = [];
-      const pattern = /==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|\*\*\*([\s\S]*?)\*\*\*|\*\*([\s\S]*?)\*\*|\*([\s\S]*?)\*|~~([\s\S]*?)~~/g;
+      const pattern = /==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|__([\s\S]*?)__|\*\*\*([\s\S]*?)\*\*\*|\*\*([\s\S]*?)\*\*|\*([\s\S]*?)\*|~~([\s\S]*?)~~/g;
       
       let lastIndex = 0;
       let match;
@@ -1527,14 +1773,17 @@
           const color = match[1] || '#ffeb3b';
           const inner = match[2];
           tokens.push(...parseFormattedText(inner, { ...currentStyle, mark: true, markColor: color }));
+        } else if (match[0].startsWith('__')) {
+          const inner = match[3];
+          tokens.push(...parseFormattedText(inner, { ...currentStyle, underline: true }));
         } else if (match[0].startsWith('***')) {
-          tokens.push(...parseFormattedText(match[3], { ...currentStyle, bold: true, italic: true }));
+          tokens.push(...parseFormattedText(match[4], { ...currentStyle, bold: true, italic: true }));
         } else if (match[0].startsWith('**')) {
-          tokens.push(...parseFormattedText(match[4], { ...currentStyle, bold: true }));
+          tokens.push(...parseFormattedText(match[5], { ...currentStyle, bold: true }));
         } else if (match[0].startsWith('*')) {
-          tokens.push(...parseFormattedText(match[5], { ...currentStyle, italic: true }));
+          tokens.push(...parseFormattedText(match[6], { ...currentStyle, italic: true }));
         } else if (match[0].startsWith('~~')) {
-          tokens.push(...parseFormattedText(match[6], { ...currentStyle, strike: true }));
+          tokens.push(...parseFormattedText(match[7], { ...currentStyle, strike: true }));
         }
 
         lastIndex = pattern.lastIndex;
@@ -1545,6 +1794,63 @@
       }
 
       return tokens;
+    }
+
+    function tokenizeRunsToLines(text, fontSize, fontFam, letterSpacing, maxWidth) {
+      const tokens = parseFormattedText(text);
+      const lines = [];
+      let curLineRuns = [];
+      let curLineWidth = 0;
+
+      tokens.forEach(tok => {
+        let fontStr = '';
+        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
+        else if (tok.bold) fontStr = `bold ${fontSize}px "${fontFam}"`;
+        else if (tok.italic) fontStr = `italic ${fontSize}px "${fontFam}"`;
+        else fontStr = `400 ${fontSize}px "${fontFam}"`;
+
+        ctx.font = fontStr;
+
+        for (let i = 0; i < tok.text.length; i++) {
+          const ch = tok.text[i];
+          const chW = ctx.measureText(ch).width + letterSpacing;
+
+          if (curLineWidth + chW > maxWidth && curLineRuns.length > 0) {
+            lines.push({ runs: curLineRuns, width: curLineWidth });
+            curLineRuns = [];
+            curLineWidth = 0;
+          }
+
+          if (curLineRuns.length > 0 &&
+              curLineRuns[curLineRuns.length - 1].bold === tok.bold &&
+              curLineRuns[curLineRuns.length - 1].italic === tok.italic &&
+              curLineRuns[curLineRuns.length - 1].underline === tok.underline &&
+              curLineRuns[curLineRuns.length - 1].strike === tok.strike &&
+              curLineRuns[curLineRuns.length - 1].mark === tok.mark &&
+              curLineRuns[curLineRuns.length - 1].markColor === tok.markColor) {
+            curLineRuns[curLineRuns.length - 1].text += ch;
+            curLineRuns[curLineRuns.length - 1].width += chW;
+          } else {
+            curLineRuns.push({
+              text: ch,
+              bold: tok.bold,
+              italic: tok.italic,
+              underline: tok.underline,
+              strike: tok.strike,
+              mark: tok.mark,
+              markColor: tok.markColor,
+              width: chW,
+              fontStr
+            });
+          }
+          curLineWidth += chW;
+        }
+      });
+
+      if (curLineRuns.length > 0) {
+        lines.push({ runs: curLineRuns, width: curLineWidth });
+      }
+      return lines;
     }
 
     function wrapFormattedParagraphs(rawText, fontSize, fontFam, letterSpacing, maxWidth) {
@@ -1565,59 +1871,34 @@
           return;
         }
 
-        const tokens = parseFormattedText(pText);
-        let curLineRuns = [];
-        let curLineWidth = 0;
-
-        tokens.forEach(tok => {
-          let fontStr = '';
-          if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
-          else if (tok.bold) fontStr = `bold ${fontSize}px "${fontFam}"`;
-          else if (tok.italic) fontStr = `italic ${fontSize}px "${fontFam}"`;
-          else fontStr = `400 ${fontSize}px "${fontFam}"`;
-
-          ctx.font = fontStr;
-
-          for (let i = 0; i < tok.text.length; i++) {
-            const ch = tok.text[i];
-            const chW = ctx.measureText(ch).width + letterSpacing;
-
-            if (curLineWidth + chW > effectiveMaxWidth && curLineRuns.length > 0) {
-              lines.push({ runs: curLineRuns, isQuote, isEmpty: false, paraIdx });
-              curLineRuns = [];
-              curLineWidth = 0;
-            }
-
-            if (curLineRuns.length > 0 &&
-                curLineRuns[curLineRuns.length - 1].bold === tok.bold &&
-                curLineRuns[curLineRuns.length - 1].italic === tok.italic &&
-                curLineRuns[curLineRuns.length - 1].strike === tok.strike &&
-                curLineRuns[curLineRuns.length - 1].mark === tok.mark &&
-                curLineRuns[curLineRuns.length - 1].markColor === tok.markColor) {
-              curLineRuns[curLineRuns.length - 1].text += ch;
-              curLineRuns[curLineRuns.length - 1].width += chW;
-            } else {
-              curLineRuns.push({
-                text: ch,
-                bold: tok.bold,
-                italic: tok.italic,
-                strike: tok.strike,
-                mark: tok.mark,
-                markColor: tok.markColor,
-                width: chW,
-                fontStr
-              });
-            }
-            curLineWidth += chW;
-          }
+        const subLines = tokenizeRunsToLines(pText, fontSize, fontFam, letterSpacing, effectiveMaxWidth);
+        subLines.forEach(sl => {
+          lines.push({ runs: sl.runs, isQuote, isEmpty: false, paraIdx, width: sl.width });
         });
-
-        if (curLineRuns.length > 0) {
-          lines.push({ runs: curLineRuns, isQuote, isEmpty: false, paraIdx });
-        }
       });
 
       return lines;
+    }
+
+    function drawAvatar(img, x, y, size) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+      ctx.clip();
+      if (img) {
+        ctx.drawImage(img, x, y, size, size);
+      } else {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size * 0.38, size * 0.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size * 0.88, size * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
 
     function drawCoverImage(img, x, y, w, h, radius, strokeColor, strokeWidth, offsetX = 0, offsetY = 0, zoom = 1.0) {
@@ -1665,6 +1946,142 @@
       }
     }
 
+    function drawRoundRect(x, y, w, h, r, fill, stroke, strokeW) {
+      ctx.save();
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(x, y, w, h, r);
+      } else {
+        ctx.rect(x, y, w, h);
+      }
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke && strokeW > 0) {
+        ctx.lineWidth = strokeW;
+        ctx.strokeStyle = stroke;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function parseChatItems(rawText) {
+      const rawLines = rawText.split('\n');
+      const items = [];
+
+      rawLines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        const dateMatch = trimmed.match(/^--(.+?)--$/);
+        if (dateMatch) {
+          items.push({ type: 'date', text: dateMatch[1].trim() });
+          return;
+        }
+
+        const sysMatch = trimmed.match(/^\[s\]\s*(.+)$/i);
+        if (sysMatch) {
+          items.push({ type: 'system', text: sysMatch[1].trim() });
+          return;
+        }
+
+        const msgMatch = trimmed.match(/^\[([1-6])\]\s*(.+)$/);
+        if (msgMatch) {
+          const pIndex = parseInt(msgMatch[1], 10) - 1;
+          items.push({
+            type: 'message',
+            profileIdx: pIndex,
+            text: msgMatch[2]
+          });
+          return;
+        }
+
+        items.push({
+          type: 'message',
+          profileIdx: 0,
+          text: trimmed
+        });
+      });
+
+      return items;
+    }
+
+    function layoutChatBlocks(items, fontSize, fontFam, letterSpacing, lineHeightMult, containerW) {
+      const avatarSize = Math.max(34, fontSize * 1.6);
+      const nameFontSize = Math.max(12, fontSize * 0.74);
+      const nameHeaderH = nameFontSize + 6;
+      const lineSpacing = fontSize * (lineHeightMult - 1);
+      const bubblePadX = Math.round(fontSize * 0.88);
+      const bubblePadY = Math.round(fontSize * 0.65);
+      const maxBubbleW = containerW * 0.65;
+      const blocks = [];
+      let totalH = 0;
+
+      items.forEach(item => {
+        if (item.type === 'date' || item.type === 'system') {
+          const capFs = Math.max(11, fontSize * 0.68);
+          ctx.font = `600 ${capFs}px "${fontFam}"`;
+          const tw = ctx.measureText(item.text).width;
+          const h = Math.round(capFs * 1.6 + 8);
+          blocks.push({
+            type: item.type,
+            text: item.text,
+            fontSize: capFs,
+            w: tw + 24,
+            h: h
+          });
+          totalH += h + 10;
+        } else if (item.type === 'message') {
+          const prof = state.profiles[item.profileIdx] || state.profiles[0];
+          
+          // 디스코드 모드는 넓은 가로폭 사용
+          const effectiveMaxW = (state.chatTheme === 'discord') 
+            ? (containerW - (prof.showAvatar ? avatarSize + 16 : 0) - 20)
+            : (maxBubbleW - (bubblePadX * 2));
+
+          const lines = tokenizeRunsToLines(item.text, fontSize, fontFam, letterSpacing, effectiveMaxW);
+          
+          let maxLineWidth = 0;
+          lines.forEach(l => { if (l.width > maxLineWidth) maxLineWidth = l.width; });
+          
+          const textBlockH = (lines.length * fontSize) + ((lines.length - 1) * lineSpacing);
+          let bubbleW, bubbleH, blockH;
+
+          if (state.chatTheme === 'discord') {
+            bubbleW = maxLineWidth;
+            bubbleH = textBlockH;
+            const contentH = nameHeaderH + textBlockH;
+            blockH = prof.showAvatar ? Math.max(contentH, avatarSize) : contentH;
+          } else {
+            // 카톡 & 단말기
+            bubbleW = Math.max(fontSize * 1.4, maxLineWidth + (bubblePadX * 2));
+            bubbleH = textBlockH + (bubblePadY * 2);
+            const contentH = nameHeaderH + bubbleH;
+            blockH = prof.showAvatar ? Math.max(contentH, avatarSize) : contentH;
+          }
+
+          blocks.push({
+            type: 'message',
+            prof,
+            lines,
+            bubbleW,
+            bubbleH,
+            blockH,
+            avatarSize,
+            nameFontSize,
+            nameHeaderH,
+            lineSpacing,
+            bubblePadX,
+            bubblePadY
+          });
+          totalH += blockH + (state.chatTheme === 'discord' ? 28 : 12);
+        }
+      });
+
+      return { blocks, totalH };
+    }
+
     let lastImgBox = null;
 
     function render() {
@@ -1672,7 +2089,7 @@
       updateDimensions();
       clampImagePosition();
 
-      if ((state.bgType === 'image' && state.bgImg) || (state.showInsert && state.insertImg)) {
+      if ((state.bgType === 'image' && state.bgImg) || (state.showInsert && state.insertImg && state.mode === 'normal')) {
         canvas.classList.add('draggable');
       } else {
         canvas.classList.remove('draggable');
@@ -1770,67 +2187,6 @@
       const workAreaY = contentY + titleHeight;
       const workAreaH = contentH - titleHeight - creditReserve;
 
-      let imgBox = null;
-      let textBox = { x: contentX, y: workAreaY, w: contentW, h: workAreaH };
-
-      const hasInsert = state.showInsert && state.insertImg;
-
-      if (hasInsert) {
-        if (state.insertPos === 'top') {
-          const imgH = Math.min(state.insertSize, Math.max(0, workAreaH - 120));
-          imgBox = { x: contentX, y: workAreaY, w: contentW, h: imgH };
-          textBox = {
-            x: contentX,
-            y: workAreaY + imgH + state.insertGap,
-            w: contentW,
-            h: Math.max(0, workAreaH - imgH - state.insertGap)
-          };
-        } else if (state.insertPos === 'bottom') {
-          const imgH = Math.min(state.insertSize, Math.max(0, workAreaH - 120));
-          textBox = {
-            x: contentX,
-            y: workAreaY,
-            w: contentW,
-            h: Math.max(0, workAreaH - imgH - state.insertGap)
-          };
-          imgBox = {
-            x: contentX,
-            y: workAreaY + textBox.h + state.insertGap,
-            w: contentW,
-            h: imgH
-          };
-        } else if (state.insertPos === 'left') {
-          const imgW = Math.min(state.insertSize, Math.max(0, contentW - 200));
-          imgBox = { x: contentX, y: workAreaY, w: imgW, h: workAreaH };
-          textBox = {
-            x: contentX + imgW + state.insertGap,
-            y: workAreaY,
-            w: Math.max(0, contentW - imgW - state.insertGap),
-            h: workAreaH
-          };
-        } else if (state.insertPos === 'right') {
-          const imgW = Math.min(state.insertSize, Math.max(0, contentW - 200));
-          textBox = {
-            x: contentX,
-            y: workAreaY,
-            w: Math.max(0, contentW - imgW - state.insertGap),
-            h: workAreaH
-          };
-          imgBox = {
-            x: contentX + textBox.w + state.insertGap,
-            y: workAreaY,
-            w: imgW,
-            h: workAreaH
-          };
-        }
-
-        if (imgBox) {
-          clampInsertPosition(imgBox);
-        }
-      }
-
-      lastImgBox = imgBox ? { ...imgBox } : null;
-
       // 제목 렌더링
       if (state.showTitle && (state.title || state.subtitle)) {
         ctx.textAlign = 'left';
@@ -1852,113 +2208,428 @@
         }
       }
 
-      // 삽입 이미지 그리기
-      if (imgBox && state.insertImg) {
-        drawCoverImage(
-          state.insertImg,
-          imgBox.x,
-          imgBox.y,
-          imgBox.w,
-          imgBox.h,
-          state.insertRadius,
-          hexToRgba(state.ink, 0.2),
-          state.insertBorder,
-          state.insertPosX,
-          state.insertPosY,
-          state.insertZoom
-        );
-      }
+      // [일반 모드]
+      if (state.mode === 'normal') {
+        let imgBox = null;
+        let textBox = { x: contentX, y: workAreaY, w: contentW, h: workAreaH };
 
-      // 본문 폰트 계산
-      let effectiveFontSize = state.fontSize;
-      let lines = [];
-      let bodyLineHeight = effectiveFontSize * state.lineHeightMult;
-      let totalBodyHeight = 0;
+        const hasInsert = state.showInsert && state.insertImg;
 
-      while (effectiveFontSize >= 11) {
-        bodyLineHeight = effectiveFontSize * state.lineHeightMult;
-        lines = wrapFormattedParagraphs(state.text, effectiveFontSize, state.font, state.letterSpacing, textBox.w);
-        totalBodyHeight = lines.length * bodyLineHeight;
-        if (totalBodyHeight <= textBox.h) break;
-        effectiveFontSize -= 1;
-      }
+        if (hasInsert) {
+          if (state.insertPos === 'top') {
+            const imgH = Math.min(state.insertSize, Math.max(0, workAreaH - 120));
+            imgBox = { x: contentX, y: workAreaY, w: contentW, h: imgH };
+            textBox = {
+              x: contentX,
+              y: workAreaY + imgH + state.insertGap,
+              w: contentW,
+              h: Math.max(0, workAreaH - imgH - state.insertGap)
+            };
+          } else if (state.insertPos === 'bottom') {
+            const imgH = Math.min(state.insertSize, Math.max(0, workAreaH - 120));
+            textBox = {
+              x: contentX,
+              y: workAreaY,
+              w: contentW,
+              h: Math.max(0, workAreaH - imgH - state.insertGap)
+            };
+            imgBox = {
+              x: contentX,
+              y: workAreaY + textBox.h + state.insertGap,
+              w: contentW,
+              h: imgH
+            };
+          } else if (state.insertPos === 'left') {
+            const imgW = Math.min(state.insertSize, Math.max(0, contentW - 200));
+            imgBox = { x: contentX, y: workAreaY, w: imgW, h: workAreaH };
+            textBox = {
+              x: contentX + imgW + state.insertGap,
+              y: workAreaY,
+              w: Math.max(0, contentW - imgW - state.insertGap),
+              h: workAreaH
+            };
+          } else if (state.insertPos === 'right') {
+            const imgW = Math.min(state.insertSize, Math.max(0, contentW - 200));
+            textBox = {
+              x: contentX,
+              y: workAreaY,
+              w: Math.max(0, contentW - imgW - state.insertGap),
+              h: workAreaH
+            };
+            imgBox = {
+              x: contentX + textBox.w + state.insertGap,
+              y: workAreaY,
+              w: imgW,
+              h: workAreaH
+            };
+          }
 
-      let textStartY = textBox.y + Math.max(0, (textBox.h - totalBodyHeight) / 2);
+          if (imgBox) {
+            clampInsertPosition(imgBox);
+          }
+        }
 
-      // 인용구 라인 바 처리
-      const quoteBlocks = [];
-      let currentQuote = null;
+        lastImgBox = imgBox ? { ...imgBox } : null;
 
-      lines.forEach((line, idx) => {
-        if (line.isQuote && !line.isEmpty) {
-          const lineTop = textStartY + (idx * bodyLineHeight);
-          if (!currentQuote || currentQuote.paraIdx !== line.paraIdx) {
-            currentQuote = { startY: lineTop, lastLineY: lineTop, paraIdx: line.paraIdx };
-            quoteBlocks.push(currentQuote);
+        // 삽입 이미지 그리기
+        if (imgBox && state.insertImg) {
+          drawCoverImage(
+            state.insertImg,
+            imgBox.x,
+            imgBox.y,
+            imgBox.w,
+            imgBox.h,
+            state.insertRadius,
+            hexToRgba(state.ink, 0.2),
+            state.insertBorder,
+            state.insertPosX,
+            state.insertPosY,
+            state.insertZoom
+          );
+        }
+
+        // 본문 폰트 계산
+        let effectiveFontSize = state.fontSize;
+        let lines = [];
+        let bodyLineHeight = effectiveFontSize * state.lineHeightMult;
+        let totalBodyHeight = 0;
+
+        while (effectiveFontSize >= 11) {
+          bodyLineHeight = effectiveFontSize * state.lineHeightMult;
+          lines = wrapFormattedParagraphs(state.text, effectiveFontSize, state.font, state.letterSpacing, textBox.w);
+          totalBodyHeight = lines.length * bodyLineHeight;
+          if (totalBodyHeight <= textBox.h) break;
+          effectiveFontSize -= 1;
+        }
+
+        let textStartY = textBox.y + Math.max(0, (textBox.h - totalBodyHeight) / 2);
+
+        // 인용구 라인 바 처리
+        const quoteBlocks = [];
+        let currentQuote = null;
+
+        lines.forEach((line, idx) => {
+          if (line.isQuote && !line.isEmpty) {
+            const lineTop = textStartY + (idx * bodyLineHeight);
+            if (!currentQuote || currentQuote.paraIdx !== line.paraIdx) {
+              currentQuote = { startY: lineTop, lastLineY: lineTop, paraIdx: line.paraIdx };
+              quoteBlocks.push(currentQuote);
+            } else {
+              currentQuote.lastLineY = lineTop;
+            }
           } else {
-            currentQuote.lastLineY = lineTop;
+            currentQuote = null;
           }
-        } else {
-          currentQuote = null;
-        }
-      });
-
-      quoteBlocks.forEach(qb => {
-        ctx.fillStyle = state.ink;
-        ctx.globalAlpha = 0.35;
-        const topY = qb.startY - 4;
-        const bottomY = qb.lastLineY + effectiveFontSize + 4;
-        const barHeight = Math.max(0, bottomY - topY);
-
-        if (ctx.roundRect) {
-          ctx.beginPath();
-          ctx.roundRect(textBox.x, topY, 4, barHeight, 2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(textBox.x, topY, 4, barHeight);
-        }
-        ctx.globalAlpha = 1.0;
-      });
-
-      // 본문 글자 출력
-      ctx.textBaseline = 'top';
-      lines.forEach((line, lineIdx) => {
-        const lineY = textStartY + (lineIdx * bodyLineHeight);
-        if (line.isEmpty) return;
-
-        let curX = textBox.x;
-        if (line.isQuote) curX += 20;
-
-        line.runs.forEach(run => {
-          ctx.font = run.fontStr;
-
-          if (run.mark) {
-            ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
-            ctx.fillRect(curX - 1, lineY - (effectiveFontSize * 0.05), run.width + 2, effectiveFontSize * 1.15);
-          }
-
-          ctx.fillStyle = state.ink;
-          let drawCharX = curX;
-          for (let c = 0; c < run.text.length; c++) {
-            const ch = run.text[c];
-            ctx.fillText(ch, drawCharX, lineY);
-            drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-          }
-
-          if (run.strike) {
-            ctx.strokeStyle = state.ink;
-            ctx.lineWidth = Math.max(1, effectiveFontSize * 0.08);
-            ctx.beginPath();
-            const strikeY = lineY + (effectiveFontSize * 0.62);
-            ctx.moveTo(curX, strikeY);
-            ctx.lineTo(curX + run.width, strikeY);
-            ctx.stroke();
-          }
-
-          curX += run.width;
         });
-      });
 
+        quoteBlocks.forEach(qb => {
+          ctx.fillStyle = state.ink;
+          ctx.globalAlpha = 0.35;
+          const topY = qb.startY - 4;
+          const bottomY = qb.lastLineY + effectiveFontSize + 4;
+          const barHeight = Math.max(0, bottomY - topY);
+
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(textBox.x, topY, 4, barHeight, 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(textBox.x, topY, 4, barHeight);
+          }
+          ctx.globalAlpha = 1.0;
+        });
+
+        // 본문 글자 출력
+        ctx.textBaseline = 'top';
+        lines.forEach((line, lineIdx) => {
+          const lineY = textStartY + (lineIdx * bodyLineHeight);
+          if (line.isEmpty) return;
+
+          let curX = textBox.x;
+          if (line.isQuote) curX += 20;
+
+          line.runs.forEach(run => {
+            ctx.font = run.fontStr;
+
+            if (run.mark) {
+              ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
+              ctx.fillRect(curX - 1, lineY - (effectiveFontSize * 0.05), run.width + 2, effectiveFontSize * 1.15);
+            }
+
+            ctx.fillStyle = state.ink;
+            let drawCharX = curX;
+            for (let c = 0; c < run.text.length; c++) {
+              const ch = run.text[c];
+              ctx.fillText(ch, drawCharX, lineY);
+              drawCharX += ctx.measureText(ch).width + state.letterSpacing;
+            }
+
+            if (run.strike) {
+              ctx.strokeStyle = state.ink;
+              ctx.lineWidth = Math.max(1, effectiveFontSize * 0.08);
+              ctx.beginPath();
+              const strikeY = lineY + (effectiveFontSize * 0.62);
+              ctx.moveTo(curX, strikeY);
+              ctx.lineTo(curX + run.width, strikeY);
+              ctx.stroke();
+            }
+              
+            if (run.underline) {
+              ctx.strokeStyle = state.ink;
+              ctx.lineWidth = Math.max(1.2, effectiveFontSize * 0.08);
+              ctx.beginPath();
+              const underlineY = lineY + (effectiveFontSize * 1.02);
+              ctx.moveTo(curX, underlineY);
+              ctx.lineTo(curX + run.width, underlineY);
+              ctx.stroke();
+            }
+
+            curX += run.width;
+          });
+        });
+      }
+
+      // [채팅 모드]
+      else if (state.mode === 'chat') {
+        const chatItems = parseChatItems(state.text);
+        let effFontSize = state.fontSize;
+        let layout = null;
+
+        while (effFontSize >= 11) {
+          layout = layoutChatBlocks(chatItems, effFontSize, state.font, state.letterSpacing, state.lineHeightMult, contentW);
+          if (layout.totalH <= workAreaH) break;
+          effFontSize -= 1;
+        }
+
+        let curY = workAreaY + Math.max(0, (workAreaH - layout.totalH) / 2);
+
+        layout.blocks.forEach(b => {
+          // --- 1. 날짜 및 시스템 메시지 ---
+          if (b.type === 'date' || b.type === 'system') {
+            const cx = contentX + (contentW / 2);
+            const isDate = b.type === 'date';
+
+            if (state.chatTheme === 'discord') {
+              // 디스코드 스타일: 얇은 가로 구분선 + 중앙 텍스트
+              ctx.save();
+              ctx.strokeStyle = hexToRgba(state.ink, 0.15);
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(contentX, curY + b.h / 2);
+              ctx.lineTo(cx - (b.w / 2) - 10, curY + b.h / 2);
+              ctx.moveTo(cx + (b.w / 2) + 10, curY + b.h / 2);
+              ctx.lineTo(contentX + contentW, curY + b.h / 2);
+              ctx.stroke();
+
+              ctx.fillStyle = hexToRgba(state.ink, 0.65);
+              ctx.font = `600 ${b.fontSize}px "${state.font}"`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(b.text, cx, curY + (b.h / 2));
+              ctx.restore();
+            } else if (state.chatTheme === 'terminal') {
+              // 요원 단말기: 각진 브래킷 HUD 태그
+              const tagText = isDate ? `[DATE // ${b.text}]` : `[ ! SYSTEM: ${b.text} ]`;
+              ctx.save();
+              ctx.font = `700 ${b.fontSize}px "${state.font}"`;
+              const ttw = ctx.measureText(tagText).width;
+              drawRoundRect(cx - (ttw / 2) - 12, curY, ttw + 24, b.h, 0, hexToRgba(state.ink, 0.08), hexToRgba(state.ink, 0.3), 1);
+              ctx.fillStyle = state.ink;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(tagText, cx, curY + (b.h / 2));
+              ctx.restore();
+            } else {
+              // 카카오톡 기본: 반투명 둥근 캡슐
+              drawRoundRect(cx - (b.w / 2), curY, b.w, b.h, b.h / 2, isDate ? 'rgba(0, 0, 0, 0.16)' : 'rgba(0, 0, 0, 0.13)', null, 0);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = `${isDate ? '600' : '500'} ${b.fontSize}px "${state.font}"`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(b.text, cx, curY + (b.h / 2));
+            }
+            curY += b.h + 10;
+          } 
+          
+          // --- 2. 대화 메시지 ---
+          else if (b.type === 'message') {
+            const isRight = b.prof.align === 'right';
+
+            // ----------------------------------------------------
+            // A. 디스코드 스타일 테마
+            // ----------------------------------------------------
+            if (state.chatTheme === 'discord') {
+              let textLeft = contentX;
+              if (b.prof.showAvatar) {
+                drawAvatar(b.prof.avatarImg, contentX, curY, b.avatarSize);
+                textLeft += b.avatarSize + 14;
+              }
+
+              // 닉네임 + 타임스탬프
+              ctx.save();
+              ctx.font = `700 ${b.nameFontSize}px "${state.font}"`;
+              ctx.fillStyle = b.prof.textColor;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'top';
+              ctx.fillText(b.prof.name, textLeft, curY);
+              const nWidth = ctx.measureText(b.prof.name).width;
+
+              ctx.font = `400 ${Math.max(10, b.nameFontSize * 0.78)}px "${state.font}"`;
+              ctx.fillStyle = hexToRgba(state.ink, 0.45);
+              ctx.fillText('오늘', textLeft + nWidth + 8, curY + 2);
+              ctx.restore();
+
+              // 본문 텍스트 (말풍선 없이 플랫하게)
+              let lineCenterY = curY + b.nameHeaderH + (effFontSize / 2);
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+
+              b.lines.forEach(line => {
+                let curX = textLeft;
+                line.runs.forEach(run => {
+                  ctx.font = run.fontStr;
+                  if (run.mark) {
+                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
+                    ctx.fillRect(curX - 1, lineCenterY - (effFontSize * 0.55), run.width + 2, effFontSize * 1.1);
+                  }
+                  ctx.fillStyle = b.prof.textColor;
+                  let drawCharX = curX;
+                  for (let c = 0; c < run.text.length; c++) {
+                    const ch = run.text[c];
+                    ctx.fillText(ch, drawCharX, lineCenterY);
+                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
+                  }
+                  if (run.strike) {
+                    ctx.strokeStyle = b.prof.textColor;
+                    ctx.lineWidth = Math.max(1.2, effFontSize * 0.08);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, lineCenterY);
+                    ctx.lineTo(curX + run.width, lineCenterY);
+                    ctx.stroke();
+                  }
+                  if (run.underline) {
+                    ctx.strokeStyle = b.prof.textColor;
+                    ctx.lineWidth = Math.max(1.5, effFontSize * 0.08);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, lineCenterY + (effFontSize * 0.52));
+                    ctx.lineTo(curX + run.width, lineCenterY + (effFontSize * 0.52));
+                    ctx.stroke();
+                  }
+                  curX += run.width;
+                });
+                lineCenterY += effFontSize + b.lineSpacing;
+              });
+              curY += b.blockH + 28;
+            }
+
+            // ----------------------------------------------------
+            // B. 카카오톡 & 요원 단말기 스타일 테마
+            // ----------------------------------------------------
+            else {
+              const isTerminal = state.chatTheme === 'terminal';
+              let bx, by;
+
+              if (isRight) {
+                // 우측 정렬
+                let rightEdge = contentX + contentW;
+                if (b.prof.showAvatar) {
+                  drawAvatar(b.prof.avatarImg, rightEdge - b.avatarSize, curY, b.avatarSize);
+                  rightEdge -= (b.avatarSize + 10);
+                }
+
+                ctx.fillStyle = hexToRgba(state.ink, 0.75);
+                ctx.font = `${isTerminal ? '700' : '600'} ${b.nameFontSize}px "${state.font}"`;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(isTerminal ? `[ ${b.prof.name} ]` : b.prof.name, rightEdge, curY);
+
+                bx = rightEdge - b.bubbleW;
+                by = curY + b.nameHeaderH;
+              } else {
+                // 좌측 정렬
+                let leftEdge = contentX;
+                if (b.prof.showAvatar) {
+                  drawAvatar(b.prof.avatarImg, leftEdge, curY, b.avatarSize);
+                  leftEdge += (b.avatarSize + 10);
+                }
+
+                ctx.fillStyle = hexToRgba(state.ink, 0.75);
+                ctx.font = `${isTerminal ? '700' : '600'} ${b.nameFontSize}px "${state.font}"`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(isTerminal ? `[ ${b.prof.name} ]` : b.prof.name, leftEdge, curY);
+
+                bx = leftEdge;
+                by = curY + b.nameHeaderH;
+              }
+
+              // 테마별 말풍선 외형 그리기
+              if (isTerminal) {
+                // 단말기: 테두리와 측면 인디케이터 바가 전체 글자색(state.ink)을 그대로 반영
+                drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 0, b.prof.bubbleBg, hexToRgba(state.ink, 0.4), 1.5);
+                ctx.save();
+                ctx.fillStyle = state.ink; // ← 글자색(state.ink)과 완벽 동기화
+                ctx.fillRect(isRight ? bx + b.bubbleW - 4 : bx, by, 4, b.bubbleH);
+                ctx.restore();
+              } else {
+                // 카카오톡: 부드러운 둥근 말풍선
+                drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 14, b.prof.bubbleBg, 'rgba(0,0,0,0.06)', 1);
+              }
+
+              // 말풍선 내부 글자 출력
+              let lineCenterY = by + b.bubblePadY + (effFontSize / 2);
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+
+              b.lines.forEach(line => {
+                let curX = bx + b.bubblePadX;
+                line.runs.forEach(run => {
+                  ctx.font = run.fontStr;
+
+                  if (run.mark) {
+                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
+                    ctx.fillRect(curX - 1, lineCenterY - (effFontSize * 0.55), run.width + 2, effFontSize * 1.15);
+                  }
+
+                  ctx.fillStyle = b.prof.textColor;
+                  let drawCharX = curX;
+                  for (let c = 0; c < run.text.length; c++) {
+                    const ch = run.text[c];
+                    ctx.fillText(ch, drawCharX, lineCenterY);
+                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
+                  }
+
+                  if (run.strike) {
+                    ctx.strokeStyle = b.prof.textColor;
+                    ctx.lineWidth = Math.max(1.2, effFontSize * 0.08);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, lineCenterY);
+                    ctx.lineTo(curX + run.width, lineCenterY);
+                    ctx.stroke();
+                  }
+                    
+                  if (run.underline) {
+                    ctx.strokeStyle = b.prof.textColor;
+                    ctx.lineWidth = Math.max(1.5, effFontSize * 0.08);
+                    ctx.beginPath();
+                    const underlineY = lineCenterY + (effFontSize * 0.52);
+                    ctx.moveTo(curX, underlineY);
+                    ctx.lineTo(curX + run.width, underlineY);
+                    ctx.stroke();
+                  }
+                    
+                  curX += run.width;
+                });
+                lineCenterY += effFontSize + b.lineSpacing;
+              });
+
+              curY += b.blockH + 10;
+            }
+          }
+        });
+      }
+        
+        
       // 크레딧 렌더링
       if (hasCredit) {
         const bottomY = canvas.height - state.padding;
@@ -2070,7 +2741,7 @@
       const canvasX = (e.clientX - rect.left) * factor;
       const canvasY = (e.clientY - rect.top) * factor;
 
-      if (state.showInsert && state.insertImg && isPointInBox(canvasX, canvasY, lastImgBox)) {
+      if (state.mode === 'normal' && state.showInsert && state.insertImg && isPointInBox(canvasX, canvasY, lastImgBox)) {
         dragTarget = 'insert';
         isDragging = true;
         dragStartX = e.clientX;
@@ -2115,7 +2786,9 @@
       dragTarget = null;
     });
 
-    // 스마트 토글 및 중첩 서식 감싸기 함수
+    // ==========================================
+    // 스마트 토글 및 중첩 서식 감싸기 함수 (원본 100% 보존)
+    // ==========================================
     function toggleFormat(type, param = null) {
       const ta = document.getElementById('in-text');
       const start = ta.selectionStart;
@@ -2126,6 +2799,7 @@
         let prefix = '', suffix = '', placeholder = '텍스트';
         if (type === 'bold') { prefix = '**'; suffix = '**'; }
         else if (type === 'italic') { prefix = '*'; suffix = '*'; }
+        else if (type === 'underline') { prefix = '__'; suffix = '__'; }
         else if (type === 'strike') { prefix = '~~'; suffix = '~~'; }
         else if (type === 'mark') {
           prefix = (param && param.toLowerCase() !== '#ffeb3b') ? `==${param}:` : '==';
@@ -2166,7 +2840,14 @@
         } else {
           newSel = '*' + sel + '*';
         }
-      } 
+      }
+      else if (type === 'underline') {
+        if (sel.startsWith('__') && sel.endsWith('__') && sel.length >= 4) {
+          newSel = sel.slice(2, -2);
+        } else {
+          newSel = '__' + sel + '__';
+        }
+      }
       else if (type === 'strike') {
         if (sel.startsWith('~~') && sel.endsWith('~~') && sel.length >= 4) {
           newSel = sel.slice(2, -2);
@@ -2203,6 +2884,7 @@
     // 툴바 버튼 이벤트 바인딩
     document.getElementById('fmt-bold').addEventListener('click', () => toggleFormat('bold'));
     document.getElementById('fmt-italic').addEventListener('click', () => toggleFormat('italic'));
+    document.getElementById('fmt-underline').addEventListener('click', () => toggleFormat('underline'));
     document.getElementById('fmt-strike').addEventListener('click', () => toggleFormat('strike'));
     
     const hlBtn = document.getElementById('fmt-hl-btn');
@@ -2214,14 +2896,12 @@
       hlBtn.style.background = e.target.value; 
     });
 
-    // 인용구 추가 / 해제 토글 (선택된 여러 줄 지원)
     document.getElementById('fmt-quote').addEventListener('click', () => {
       const ta = document.getElementById('in-text');
       const val = ta.value;
       let start = ta.selectionStart;
       let end = ta.selectionEnd;
 
-      // 선택 범위를 포함하는 줄 전체로 확장
       const lineStart = val.lastIndexOf('\n', Math.max(0, start - 1)) + 1;
       const nextNewLine = val.indexOf('\n', end);
       const lineEnd = nextNewLine === -1 ? val.length : nextNewLine;
@@ -2245,13 +2925,121 @@
       render();
     });
 
+    // 채팅 퀵 삽입 버튼
+    function insertSnippet(snippet) {
+      const ta = document.getElementById('in-text');
+      const start = ta.selectionStart;
+      const end = ta.selectionEnd;
+      const val = ta.value;
+      const prefix = (start > 0 && val[start - 1] !== '\n') ? '\n' : '';
+      const suffix = (end < val.length && val[end] !== '\n') ? '\n' : '';
+      const insert = `${prefix}${snippet}${suffix}`;
+      ta.value = val.substring(0, start) + insert + val.substring(end);
+      ta.selectionStart = ta.selectionEnd = start + insert.length;
+      state.text = ta.value;
+      ta.focus();
+      render();
+    }
+
+    document.getElementById('btn-quick-date').addEventListener('click', () => {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      insertSnippet(`--${y}년 ${m}월 ${d}일--`);
+    });
+
+    document.getElementById('btn-quick-system').addEventListener('click', () => {
+      insertSnippet(`[s] 알림 메시지를 입력하세요.`);
+    });
+
+    // 모드 탭 전환 이벤트
+    document.getElementById('mode-tab-bar').addEventListener('click', (e) => {
+      const btn = e.target.closest('.mode-tab-btn');
+      if (!btn) return;
+      state.mode = btn.dataset.mode;
+      const ta = document.getElementById('in-text');
+      if (state.mode === 'chat' && ta.value === sampleNormalText) {
+        state.text = sampleChatText;
+        ta.value = state.text;
+      } else if (state.mode === 'normal' && ta.value === sampleChatText) {
+        state.text = sampleNormalText;
+        ta.value = state.text;
+      }
+      syncModeUI();
+      render();
+    });
+      
+    // 채팅 테마 탭 전환 이벤트
+    document.getElementById('chat-theme-group').addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') return;
+      document.querySelectorAll('#chat-theme-group button').forEach(b => b.classList.remove('on'));
+      e.target.classList.add('on');
+      state.chatTheme = e.target.dataset.theme;
+      render();
+    });
+
+    // 프로필 탭 이벤트
+    document.getElementById('chat-profile-tabs').addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') return;
+      state.currentProfileIdx = parseInt(e.target.dataset.p, 10);
+      syncCurrentProfileUI();
+    });
+
+    document.getElementById('in-p-name').addEventListener('input', (e) => {
+      state.profiles[state.currentProfileIdx].name = e.target.value;
+      render();
+    });
+
+    document.getElementById('p-align-group').addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') return;
+      state.profiles[state.currentProfileIdx].align = e.target.dataset.align;
+      syncCurrentProfileUI();
+      render();
+    });
+
+    document.getElementById('tog-p-avatar').addEventListener('click', () => {
+      const p = state.profiles[state.currentProfileIdx];
+      p.showAvatar = !p.showAvatar;
+      syncCurrentProfileUI();
+      render();
+    });
+
+    document.getElementById('in-p-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const b64 = evt.target.result;
+        const p = state.profiles[state.currentProfileIdx];
+        p.avatarData = b64;
+        const img = new Image();
+        img.onload = () => {
+          p.avatarImg = img;
+          syncCurrentProfileUI();
+          render();
+        };
+        img.src = b64;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('in-p-bubble-bg').addEventListener('input', (e) => {
+      state.profiles[state.currentProfileIdx].bubbleBg = e.target.value;
+      render();
+    });
+    document.getElementById('in-p-text-color').addEventListener('input', (e) => {
+      state.profiles[state.currentProfileIdx].textColor = e.target.value;
+      render();
+    });
+
     // 본문 텍스트 입력
     document.getElementById('in-text').addEventListener('input', (e) => {
       state.text = e.target.value;
       render();
     });
 
-    // 본문 삽입 이미지 이벤트 (Base64 변환 저장 추가)
+    // 본문 삽입 이미지 이벤트
     const togInsert = document.getElementById('tog-insert');
     const insertControls = document.getElementById('insert-controls');
     togInsert.addEventListener('click', () => {
@@ -2268,7 +3056,7 @@
       const reader = new FileReader();
       reader.onload = (evt) => {
         const base64Str = evt.target.result;
-        state.insertImgData = base64Str; // 영구 저장용
+        state.insertImgData = base64Str;
         const img = new Image();
         img.onload = () => {
           state.insertImg = img;
@@ -2361,7 +3149,7 @@
       render();
     });
 
-    // 서체 & 간격
+    // 서체 & 간격 (원본 개별 리스너 100% 유지)
     document.getElementById('in-fs').addEventListener('input', (e) => {
       state.fontSize = parseInt(e.target.value, 10);
       document.getElementById('fs-val').innerText = `${state.fontSize}px`;
@@ -2476,7 +3264,7 @@
       }
     });
 
-    // 배경 이미지 파일 (Base64 변환 저장 추가)
+    // 배경 이미지 파일
     document.getElementById('in-file').addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -2484,7 +3272,7 @@
       const reader = new FileReader();
       reader.onload = (evt) => {
         const base64Str = evt.target.result;
-        state.bgImgData = base64Str; // 영구 저장용
+        state.bgImgData = base64Str;
         const img = new Image();
         img.onload = () => {
           state.bgImg = img;
@@ -2520,6 +3308,7 @@
       }
     });
 
+    // 누락되었던 in-bgdim 리스너 원본 복구
     document.getElementById('in-bgdim').addEventListener('input', (e) => {
       state.bgDim = parseInt(e.target.value, 10) / 100;
       document.getElementById('bgdim-val').innerText = `${e.target.value}%`;
@@ -2546,12 +3335,20 @@
       if (cleanChar) parts.push(cleanChar);
       if (state.showTitle && cleanTitle) parts.push(cleanTitle);
 
-      const fileName = parts.length > 1 ? `${parts.join('_')}.png` : `${dateStr}_발췌.png`;
+      const fileName = parts.length > 1 ? `${parts.join('_')}.png` : `${dateStr}_${state.mode === 'chat' ? '채팅' : ''}발췌.png`;
 
-      const link = document.createElement('a');
-      link.download = fileName;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      // iOS 사파리 및 모바일 브라우저 toDataURL 차단 우회 (Blob 기반 표준 다운로드)
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = fileName;
+        link.href = blobUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      }, 'image/png');
     });
       
     document.getElementById('btn-copy').addEventListener('click', () => {
@@ -2642,7 +3439,6 @@
         document.getElementById('btn-restore-cancel').onclick = () => {
           modal.style.display = 'none';
           localStorage.removeItem(STORAGE_KEY);
-          // 텍스트와 메모리 객체 완전 초기화
           state.text = '내용을 입력하세요! ( _ _)♡';
           document.getElementById('in-text').value = state.text;
           state.title = '';
@@ -2655,9 +3451,11 @@
           state.insertImgData = null;
           document.getElementById('file-name').innerText = '＋ 배경 파일 선택';
           document.getElementById('insert-file-name').innerText = '＋ 이미지 선택';
+          syncModeUI();
           render();
         };
       } else {
+        syncModeUI();
         render();
       }
     });
@@ -2665,7 +3463,6 @@
     // ==========================================
     // 모바일 터치 & 드래그 안정화
     // ==========================================
-      
     canvas.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return;
       const touch = e.touches[0];
@@ -2678,7 +3475,7 @@
 
     window.addEventListener('touchmove', (e) => {
       if (!isDragging || e.touches.length !== 1) return;
-      if (e.cancelable) e.preventDefault(); // 모바일 화면 스크롤 방지
+      if (e.cancelable) e.preventDefault();
       const touch = e.touches[0];
       const mouseEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
