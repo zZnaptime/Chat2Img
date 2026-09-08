@@ -2179,21 +2179,213 @@
         const y = (canvas.height - h) / 2 + state.bgPosY;
 
         ctx.save();
+
         if (state.bgBlur > 0) {
-          // 모바일 사파리 호환 오프스크린 블러 렌더링
-          const bleed = Math.round(state.bgBlur * 2.5);
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = canvas.width + bleed * 2;
-          tempCanvas.height = canvas.height + bleed * 2;
-          const tCtx = tempCanvas.getContext('2d');
-          
-          tCtx.filter = `blur(${state.bgBlur}px)`;
-          tCtx.drawImage(img, x + bleed, y + bleed, w, h);
-          
-          ctx.drawImage(tempCanvas, -bleed, -bleed);
+          const blur = state.bgBlur;
+
+          // iPhone / iPad 감지
+          const isIOS =
+            /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (
+              navigator.platform === 'MacIntel' &&
+              navigator.maxTouchPoints > 1
+            );
+
+          // 블러 가장자리 잘림 방지용 여유 공간
+          const bleed = Math.ceil(blur * 3);
+
+          if (isIOS) {
+            /*
+              ============================================
+              iOS Safari 강제 블러 방식
+              ============================================
+
+              Canvas filter를 사용하지 않고
+              이미지를 여러 위치에 낮은 투명도로 겹쳐 그려
+              블러 효과를 직접 생성합니다.
+
+              → iPhone Safari Canvas filter 문제 회피
+            */
+
+            const tempCanvas = document.createElement('canvas');
+
+            tempCanvas.width =
+              canvas.width + bleed * 2;
+
+            tempCanvas.height =
+              canvas.height + bleed * 2;
+
+            const tCtx =
+              tempCanvas.getContext('2d');
+
+            const drawX =
+              x + bleed;
+
+            const drawY =
+              y + bleed;
+
+            /*
+              블러 품질 설정
+
+              blur 값이 높을수록 샘플 개수를 증가
+              너무 많으면 iPhone에서 렌더링이 느려지므로 제한
+            */
+
+            const sampleCount =
+              Math.min(
+                80,
+                Math.max(
+                  24,
+                  Math.round(blur * 2.5)
+                )
+              );
+
+            /*
+              여러 방향으로 이미지를 살짝씩 이동하여
+              낮은 opacity로 겹쳐 그립니다.
+
+              중앙 + 주변부를 동시에 그려
+              최대한 자연스러운 blur 느낌을 만듭니다.
+            */
+
+            tCtx.save();
+
+            // 전체 이미지 투명도 누적 방지
+            tCtx.globalAlpha =
+              1 / (sampleCount + 1);
+
+            // 중앙 이미지
+            tCtx.drawImage(
+              img,
+              drawX,
+              drawY,
+              w,
+              h
+            );
+
+            // 주변 블러 샘플
+            for (
+              let i = 0;
+              i < sampleCount;
+              i++
+            ) {
+
+              const angle =
+                Math.random() *
+                Math.PI *
+                2;
+
+              /*
+                중심보다 바깥쪽 샘플이
+                너무 강하지 않도록 sqrt 사용
+              */
+
+              const distance =
+                Math.sqrt(
+                  Math.random()
+                ) *
+                blur;
+
+              const offsetX =
+                Math.cos(angle) *
+                distance;
+
+              const offsetY =
+                Math.sin(angle) *
+                distance;
+
+              tCtx.drawImage(
+                img,
+                drawX + offsetX,
+                drawY + offsetY,
+                w,
+                h
+              );
+            }
+
+            tCtx.restore();
+
+            /*
+              여유 영역을 제외하고
+              실제 캔버스 영역만 복사
+            */
+
+            ctx.drawImage(
+              tempCanvas,
+
+              bleed,
+              bleed,
+
+              canvas.width,
+              canvas.height,
+
+              0,
+              0,
+
+              canvas.width,
+              canvas.height
+            );
+
+          } else {
+
+            /*
+              PC / Android 등
+              기존 Canvas blur 사용
+            */
+
+            const tempCanvas =
+              document.createElement('canvas');
+
+            tempCanvas.width =
+              canvas.width + bleed * 2;
+
+            tempCanvas.height =
+              canvas.height + bleed * 2;
+
+            const tCtx =
+              tempCanvas.getContext('2d');
+
+            tCtx.save();
+
+            tCtx.filter =
+              `blur(${blur}px)`;
+
+            tCtx.drawImage(
+              img,
+              x + bleed,
+              y + bleed,
+              w,
+              h
+            );
+
+            tCtx.filter = 'none';
+
+            tCtx.restore();
+
+            ctx.drawImage(
+              tempCanvas,
+              bleed,
+              bleed,
+              canvas.width,
+              canvas.height,
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+          }
+
         } else {
-          ctx.drawImage(img, x, y, w, h);
+
+          ctx.drawImage(
+            img,
+            x,
+            y,
+            w,
+            h
+          );
         }
+
         ctx.restore();
 
         ctx.fillStyle = hexToRgba(state.bgDimColor, state.bgDim);
