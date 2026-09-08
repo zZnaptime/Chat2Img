@@ -2555,7 +2555,7 @@
               // 번역문 렌더링 (오퍼시티 0.68)
               if (b.transLines && b.transLines.length > 0) {
                 let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
-                drawRunList(b.transLines, textLeft, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.68);
+                drawRunList(b.transLines, textLeft, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.60);
               }
 
               curY += b.blockH + 28;
@@ -2617,7 +2617,7 @@
               // 번역문 렌더링 (폰트 82%, 오퍼시티 0.68)
               if (b.transLines && b.transLines.length > 0) {
                 let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
-                drawRunList(b.transLines, bx + b.bubblePadX, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.68);
+                drawRunList(b.transLines, bx + b.bubblePadX, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.60);
               }
 
               curY += b.blockH + 10;
