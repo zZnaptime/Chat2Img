@@ -162,6 +162,14 @@
     }
 
     /* 포맷 툴바 & 플랫 버튼 */
+    /* 본문 라벨↔툴바 간격은 유지하고, 툴바↔입력창 사이 gap만 상쇄 */
+    .text-editor-group {
+      gap: 7px;
+    }
+    .text-editor-group .fmt-toolbar-standalone {
+      margin-bottom: -7px;
+    }
+
     .fmt-toolbar-standalone {
       display: flex;
       align-items: center;
@@ -870,7 +878,7 @@
     <section class="panel-card">
       <div class="panel-card-title">✦ 본문 및 이미지</div>
 
-      <div class="field-group">
+      <div class="field-group text-editor-group">
         <div class="label-header-row">
           <span class="label-sub">본문 내용</span>
           <button type="button" class="btn-clear-text" id="btn-clear-text" title="본문 전체 지우기">삭제</button>
@@ -998,7 +1006,7 @@
       </div>
 
       <div class="field-group">
-        <span class="label-sub">본문 기본 글자 크기</span>
+        <span class="label-sub">글자 크기</span>
         <div class="range-row">
           <input type="range" id="in-fs" min="16" max="56" value="24">
           <span id="fs-val">24px</span>
@@ -1006,7 +1014,7 @@
       </div>
 
       <div class="field-group">
-        <span class="label-sub">글자 자간 (Letter Spacing)</span>
+        <span class="label-sub">자간</span>
         <div class="range-row">
           <input type="range" id="in-ls" min="-2" max="10" step="0.5" value="0">
           <span id="ls-val">0px</span>
@@ -1014,7 +1022,7 @@
       </div>
 
       <div class="field-group">
-        <span class="label-sub">본문 행간 (Line Height)</span>
+        <span class="label-sub">행간</span>
         <div class="range-row">
           <input type="range" id="in-lh" min="1.2" max="2.6" step="0.05" value="1.75">
           <span id="lh-val">1.75</span>
