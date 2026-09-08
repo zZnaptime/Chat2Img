@@ -1476,23 +1476,63 @@
     const STORAGE_KEY = 'yusi_card_maker_state';
 
     function saveToStorage() {
+      // 이미지 용량이 너무 크면 스토리지 제한에 걸려 데이터가 증발하므로 임시 리사이징 압축 수행
+      const compressDataUrl = (dataUrl, maxW, maxH, callback) => {
+        if (!dataUrl) { callback(null); return; }
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxW || h > maxH) {
+            if (w/h > maxW/maxH) { h = Math.round(h * maxW / w); w = maxW; }
+            else { w = Math.round(w * maxH / h); h = maxH; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = () => callback(dataUrl);
+        img.src = dataUrl;
+      };
+
       const dataToSave = JSON.parse(JSON.stringify(state));
       delete dataToSave.bgImg;
       delete dataToSave.insertImg;
       dataToSave.profiles.forEach(p => { delete p.avatarImg; });
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-      } catch (e) {
-        console.warn('전체 저장 실패, 이미지 데이터를 제외하고 저장합니다:', e);
-        try {
-          delete dataToSave.bgImgData;
-          delete dataToSave.insertImgData;
-          dataToSave.profiles.forEach(p => { delete p.avatarData; });
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-        } catch (err) {
-          console.warn('로컬 저장소 저장 불가:', err);
-        }
-      }
+
+      // 배경 및 프로필 사진 압축 후 저장 시도
+      compressDataUrl(dataToSave.bgImgData, 1000, 1000, (compBg) => {
+        if (compBg) dataToSave.bgImgData = compBg;
+        compressDataUrl(dataToSave.insertImgData, 1000, 1000, (compIns) => {
+          if (compIns) dataToSave.insertImgData = compIns;
+          
+          let profileCount = dataToSave.profiles.length;
+          let processed = 0;
+          
+          const finalizeSave = () => {
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            } catch (e) {
+              console.warn('스토리지 용량 초과: 이미지 데이터를 제외하고 저장합니다.', e);
+              delete dataToSave.bgImgData;
+              delete dataToSave.insertImgData;
+              dataToSave.profiles.forEach(p => { delete p.avatarData; });
+              try { localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave)); } catch(err) {}
+            }
+          };
+
+          if (profileCount === 0) { finalizeSave(); return; }
+
+          dataToSave.profiles.forEach(p => {
+            compressDataUrl(p.avatarData, 400, 400, (compAvatar) => {
+              if (compAvatar) p.avatarData = compAvatar;
+              processed++;
+              if (processed === profileCount) finalizeSave();
+            });
+          });
+        });
+      });
     }
 
     let saveTimer = null;
@@ -2130,7 +2170,9 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const img = state.bgImg;
-        const scale = Math.max(canvas.width / img.width, canvas.height / img.height) * state.bgZoom;
+        // 블러 수치(bgBlur)에 비례하여 이미지를 자동으로 살짝 확대하여 테두리 검은 여백을 메움
+        const blurScaleBonus = 1 + (state.bgBlur * 0.003); 
+        const scale = Math.max(canvas.width / img.width, canvas.height / img.height) * state.bgZoom * blurScaleBonus;
         const w = img.width * scale;
         const h = img.height * scale;
         const x = (canvas.width - w) / 2 + state.bgPosX;
@@ -2138,9 +2180,17 @@
 
         ctx.save();
         if (state.bgBlur > 0) {
-          const bleed = state.bgBlur * 2.5;
-          ctx.filter = `blur(${state.bgBlur}px)`;
-          ctx.drawImage(img, x - bleed, y - bleed, w + bleed * 2, h + bleed * 2);
+          // 모바일 사파리 호환 오프스크린 블러 렌더링
+          const bleed = Math.round(state.bgBlur * 2.5);
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = canvas.width + bleed * 2;
+          tempCanvas.height = canvas.height + bleed * 2;
+          const tCtx = tempCanvas.getContext('2d');
+          
+          tCtx.filter = `blur(${state.bgBlur}px)`;
+          tCtx.drawImage(img, x + bleed, y + bleed, w, h);
+          
+          ctx.drawImage(tempCanvas, -bleed, -bleed);
         } else {
           ctx.drawImage(img, x, y, w, h);
         }
