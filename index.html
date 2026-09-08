@@ -2183,7 +2183,12 @@
         if (state.bgBlur > 0) {
           const blur = state.bgBlur;
 
-          // iPhone / iPad 감지
+          /*
+            ============================================
+            iOS / iPadOS 감지
+            ============================================
+          */
+
           const isIOS =
             /iPad|iPhone|iPod/.test(navigator.userAgent) ||
             (
@@ -2191,133 +2196,250 @@
               navigator.maxTouchPoints > 1
             );
 
-          // 블러 가장자리 잘림 방지용 여유 공간
-          const bleed = Math.ceil(blur * 3);
+
+          /*
+            ============================================
+            블러 가장자리 잘림 방지
+            ============================================
+
+            blur가 클수록 캔버스 외부 여유 공간을 확보
+          */
+
+          const bleed =
+            Math.ceil(blur * 3);
+
+
+          /*
+            ============================================
+            iOS Safari 강제 블러
+            ============================================
+
+            CanvasRenderingContext2D.filter를
+            완전히 사용하지 않음.
+
+            저해상도 → 고해상도 확대를 이용한
+            다운샘플링 블러 방식.
+          */
 
           if (isIOS) {
-            /*
-              ============================================
-              iOS Safari 강제 블러 방식
-              ============================================
-
-              Canvas filter를 사용하지 않고
-              이미지를 여러 위치에 낮은 투명도로 겹쳐 그려
-              블러 효과를 직접 생성합니다.
-
-              → iPhone Safari Canvas filter 문제 회피
-            */
-
-            const tempCanvas = document.createElement('canvas');
-
-            tempCanvas.width =
-              canvas.width + bleed * 2;
-
-            tempCanvas.height =
-              canvas.height + bleed * 2;
-
-            const tCtx =
-              tempCanvas.getContext('2d');
-
-            const drawX =
-              x + bleed;
-
-            const drawY =
-              y + bleed;
 
             /*
-              블러 품질 설정
+              blur 값에 따라
+              내부 렌더링 해상도를 결정.
 
-              blur 값이 높을수록 샘플 개수를 증가
-              너무 많으면 iPhone에서 렌더링이 느려지므로 제한
+              blur가 강할수록
+              더 낮은 해상도로 렌더링하여
+              블러 효과 강화.
+
+              너무 낮으면 픽셀이 보일 수 있으므로
+              최소값 제한.
             */
 
-            const sampleCount =
-              Math.min(
-                80,
-                Math.max(
-                  24,
-                  Math.round(blur * 2.5)
+            const blurScale =
+              Math.max(
+                0.08,
+                Math.min(
+                  0.5,
+                  1 / (1 + blur * 0.12)
                 )
               );
 
-            /*
-              여러 방향으로 이미지를 살짝씩 이동하여
-              낮은 opacity로 겹쳐 그립니다.
 
-              중앙 + 주변부를 동시에 그려
-              최대한 자연스러운 blur 느낌을 만듭니다.
+            /*
+              실제 블러 처리용 작은 캔버스 크기
+
+              iPhone 메모리 사용량 감소를 위해
+              너무 큰 캔버스 방지
             */
 
-            tCtx.save();
+            const smallWidth =
+              Math.max(
+                32,
+                Math.round(
+                  (canvas.width + bleed * 2) *
+                  blurScale
+                )
+              );
 
-            // 전체 이미지 투명도 누적 방지
-            tCtx.globalAlpha =
-              1 / (sampleCount + 1);
+            const smallHeight =
+              Math.max(
+                32,
+                Math.round(
+                  (canvas.height + bleed * 2) *
+                  blurScale
+                )
+              );
 
-            // 중앙 이미지
-            tCtx.drawImage(
+
+            /*
+              1차 블러용 캔버스
+            */
+
+            const blurCanvas =
+              document.createElement('canvas');
+
+            blurCanvas.width =
+              smallWidth;
+
+            blurCanvas.height =
+              smallHeight;
+
+            const bCtx =
+              blurCanvas.getContext('2d');
+
+
+            /*
+              Safari에서 이미지 보간 품질 설정
+            */
+
+            bCtx.imageSmoothingEnabled =
+              true;
+
+            bCtx.imageSmoothingQuality =
+              'high';
+
+
+            /*
+              원본 이미지 렌더링
+
+              좌표와 크기를
+              작은 캔버스 비율에 맞게 변환
+            */
+
+            bCtx.drawImage(
               img,
-              drawX,
-              drawY,
-              w,
-              h
+
+              (x + bleed) * blurScale,
+              (y + bleed) * blurScale,
+
+              w * blurScale,
+              h * blurScale
             );
 
-            // 주변 블러 샘플
-            for (
-              let i = 0;
-              i < sampleCount;
-              i++
-            ) {
 
-              const angle =
-                Math.random() *
-                Math.PI *
-                2;
+            /*
+              ============================================
+              추가 블러 패스
+              ============================================
+
+              blur가 일정 수준 이상일 경우
+              한 번 더 축소 → 확대하여
+              자연스러운 블러 강화.
+
+              랜덤 없음
+              매 render마다 동일한 결과
+            */
+
+            if (blur > 8) {
+
+              const passScale =
+                blur > 20
+                  ? 0.5
+                  : 0.7;
+
+
+              const passWidth =
+                Math.max(
+                  16,
+                  Math.round(
+                    smallWidth *
+                    passScale
+                  )
+                );
+
+              const passHeight =
+                Math.max(
+                  16,
+                  Math.round(
+                    smallHeight *
+                    passScale
+                  )
+                );
+
+
+              const passCanvas =
+                document.createElement('canvas');
+
+              passCanvas.width =
+                passWidth;
+
+              passCanvas.height =
+                passHeight;
+
+              const pCtx =
+                passCanvas.getContext('2d');
+
+
+              pCtx.imageSmoothingEnabled =
+                true;
+
+              pCtx.imageSmoothingQuality =
+                'high';
+
 
               /*
-                중심보다 바깥쪽 샘플이
-                너무 강하지 않도록 sqrt 사용
+                2차 축소
               */
 
-              const distance =
-                Math.sqrt(
-                  Math.random()
-                ) *
-                blur;
+              pCtx.drawImage(
+                blurCanvas,
+                0,
+                0,
+                passWidth,
+                passHeight
+              );
 
-              const offsetX =
-                Math.cos(angle) *
-                distance;
 
-              const offsetY =
-                Math.sin(angle) *
-                distance;
+              /*
+                다시 blurCanvas 크기로 확대
 
-              tCtx.drawImage(
-                img,
-                drawX + offsetX,
-                drawY + offsetY,
-                w,
-                h
+                이 과정에서 픽셀 보간으로
+                추가 블러 효과 생성
+              */
+
+              bCtx.clearRect(
+                0,
+                0,
+                smallWidth,
+                smallHeight
+              );
+
+              bCtx.drawImage(
+                passCanvas,
+                0,
+                0,
+                smallWidth,
+                smallHeight
               );
             }
 
-            tCtx.restore();
 
             /*
-              여유 영역을 제외하고
-              실제 캔버스 영역만 복사
+              ============================================
+              메인 캔버스로 확대
+              ============================================
+            */
+
+            ctx.imageSmoothingEnabled =
+              true;
+
+            ctx.imageSmoothingQuality =
+              'high';
+
+
+            /*
+              bleed 영역을 제외하고
+              실제 화면 영역만 확대 렌더링
             */
 
             ctx.drawImage(
-              tempCanvas,
+              blurCanvas,
 
-              bleed,
-              bleed,
+              bleed * blurScale,
+              bleed * blurScale,
 
-              canvas.width,
-              canvas.height,
+              canvas.width * blurScale,
+              canvas.height * blurScale,
 
               0,
               0,
@@ -2326,29 +2448,50 @@
               canvas.height
             );
 
+
           } else {
 
             /*
-              PC / Android 등
-              기존 Canvas blur 사용
+              ============================================
+              PC / Android
+              ============================================
+
+              기존 Canvas filter 사용
+              GPU 가속 환경에서는 가장 빠르고 품질 좋음.
             */
 
             const tempCanvas =
               document.createElement('canvas');
 
+
             tempCanvas.width =
-              canvas.width + bleed * 2;
+              canvas.width +
+              bleed * 2;
+
 
             tempCanvas.height =
-              canvas.height + bleed * 2;
+              canvas.height +
+              bleed * 2;
+
 
             const tCtx =
               tempCanvas.getContext('2d');
 
-            tCtx.save();
+
+            tCtx.imageSmoothingEnabled =
+              true;
+
+            tCtx.imageSmoothingQuality =
+              'high';
+
+
+            /*
+              일반 브라우저 blur
+            */
 
             tCtx.filter =
               `blur(${blur}px)`;
+
 
             tCtx.drawImage(
               img,
@@ -2358,24 +2501,44 @@
               h
             );
 
-            tCtx.filter = 'none';
 
-            tCtx.restore();
+            /*
+              filter 상태 초기화
+            */
+
+            tCtx.filter =
+              'none';
+
+
+            /*
+              bleed를 제외한 실제 영역만 복사
+            */
 
             ctx.drawImage(
               tempCanvas,
+
               bleed,
               bleed,
+
               canvas.width,
               canvas.height,
+
               0,
               0,
+
               canvas.width,
               canvas.height
             );
           }
 
+
         } else {
+
+          /*
+            ============================================
+            블러 없음
+            ============================================
+          */
 
           ctx.drawImage(
             img,
