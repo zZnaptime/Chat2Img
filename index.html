@@ -2826,15 +2826,15 @@
 
         let textStartY = textBox.y + Math.max(0, (textBox.h - totalBodyHeight) / 2);
 
-        // 인용구 라인 바 처리
+        // 인용구 라인 바 처리 (연속된 인용 라인은 하나의 긴 막대로 병합)
         const quoteBlocks = [];
         let currentQuote = null;
 
         lines.forEach((line, idx) => {
           if (line.isQuote && !line.isEmpty) {
             const lineTop = textStartY + (idx * bodyLineHeight);
-            if (!currentQuote || currentQuote.paraIdx !== line.paraIdx) {
-              currentQuote = { startY: lineTop, lastLineY: lineTop, paraIdx: line.paraIdx };
+            if (!currentQuote) {
+              currentQuote = { startY: lineTop, lastLineY: lineTop };
               quoteBlocks.push(currentQuote);
             } else {
               currentQuote.lastLineY = lineTop;
