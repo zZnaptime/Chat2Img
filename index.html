@@ -1843,6 +1843,12 @@
       let curLineRuns = [];
       let curLineWidth = 0;
 
+      const pushLine = () => {
+        lines.push({ runs: curLineRuns, width: curLineWidth });
+        curLineRuns = [];
+        curLineWidth = 0;
+      };
+
       tokens.forEach(tok => {
         let fontStr = '';
         if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
@@ -1854,12 +1860,119 @@
 
         for (let i = 0; i < tok.text.length; i++) {
           const ch = tok.text[i];
+
+          // 텍스트 내 엔터(줄바꿈) 처리
+          if (ch === '\n') {
+            pushLine();
+            continue;
+          }
+
           const chW = ctx.measureText(ch).width + letterSpacing;
 
           if (curLineWidth + chW > maxWidth && curLineRuns.length > 0) {
-            lines.push({ runs: curLineRuns, width: curLineWidth });
-            curLineRuns = [];
-            curLineWidth = 0;
+            pushLine();
+          }
+
+          if (curLineRuns.length > 0 &&
+              curLineRuns[curLineRuns.length - 1].bold === tok.bold &&
+              curLineRuns[curLineRuns.length - 1].italic === tok.italic &&
+              curLineRuns[curLineRuns.length - 1].underline === tok.underline &&
+              curLineRuns[curLineRuns.length - 1].strike === tok.strike &&
+              curLineRuns[curLineRuns.length - 1].mark === tok.mark &&
+              curLineRuns[curLineRuns.length - 1].markColor === tok.markColor) {
+            curLineRuns[curLineRuns.length - 1].text += ch;
+            curLineRuns[curLineRuns.length - 1].width += chW;
+          } else {
+            curLineRuns.push({
+              text: ch,
+              bold: tok.bold,
+              italic: tok.italic,
+              underline: tok.underline,
+              strike: tok.strike,
+              mark: tok.mark,
+              markColor: tok.markColor,
+              width: chW,
+              fontStr
+            });
+          }
+          curLineWidth += chW;
+        }
+      });
+
+      if (curLineRuns.length > 0 || lines.length === 0) {
+        pushLine();
+      }
+      return lines;
+    }
+
+    function wrapFormattedParagraphs(rawText, fontSize, fontFam, letterSpacing, maxWidth) {
+      const normalized = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const rawLines = normalized.split('\n');
+
+      // 각 줄의 인용구(>) 여부 판별 및 인용 기호 분리
+      const lineQuotes = [];
+      const cleanLines = [];
+
+      rawLines.forEach(line => {
+        if (line.startsWith('>')) {
+          lineQuotes.push(true);
+          cleanLines.push(line.replace(/^>\s?/, ''));
+        } else {
+          lineQuotes.push(false);
+          cleanLines.push(line);
+        }
+      });
+
+      // 전체 텍스트에서 서식 태그를 먼저 파싱 (줄바꿈을 넘는 서식 매칭 지원)
+      const fullText = cleanLines.join('\n');
+      const tokens = parseFormattedText(fullText);
+
+      const lines = [];
+      let curLineRuns = [];
+      let curLineWidth = 0;
+      let curParaIdx = 0;
+
+      const getEffectiveMaxWidth = (pIdx) => {
+        return lineQuotes[pIdx] ? maxWidth - 28 : maxWidth;
+      };
+
+      const pushCurrentLine = (isEmpty = false) => {
+        lines.push({
+          runs: curLineRuns,
+          isQuote: Boolean(lineQuotes[curParaIdx]),
+          isEmpty: isEmpty || curLineRuns.length === 0,
+          paraIdx: curParaIdx,
+          width: curLineWidth
+        });
+        curLineRuns = [];
+        curLineWidth = 0;
+      };
+
+      tokens.forEach(tok => {
+        let fontStr = '';
+        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
+        else if (tok.bold) fontStr = `bold ${fontSize}px "${fontFam}"`;
+        else if (tok.italic) fontStr = `italic ${fontSize}px "${fontFam}"`;
+        else fontStr = `400 ${fontSize}px "${fontFam}"`;
+
+        ctx.font = fontStr;
+
+        for (let i = 0; i < tok.text.length; i++) {
+          const ch = tok.text[i];
+
+          // 문단 엔터 줄바꿈 처리
+          if (ch === '\n') {
+            pushCurrentLine(curLineRuns.length === 0);
+            curParaIdx++;
+            continue;
+          }
+
+          const chW = ctx.measureText(ch).width + letterSpacing;
+          const effectiveMaxW = getEffectiveMaxWidth(curParaIdx);
+
+          // 너비 초과 시 자동 줄바꿈
+          if (curLineWidth + chW > effectiveMaxW && curLineRuns.length > 0) {
+            pushCurrentLine(false);
           }
 
           if (curLineRuns.length > 0 &&
@@ -1889,34 +2002,10 @@
       });
 
       if (curLineRuns.length > 0) {
-        lines.push({ runs: curLineRuns, width: curLineWidth });
+        pushCurrentLine(false);
+      } else if (curParaIdx < rawLines.length) {
+        pushCurrentLine(true);
       }
-      return lines;
-    }
-
-    function wrapFormattedParagraphs(rawText, fontSize, fontFam, letterSpacing, maxWidth) {
-      const paragraphs = rawText.split('\n');
-      const lines = [];
-
-      paragraphs.forEach((rawPara, paraIdx) => {
-        let isQuote = false;
-        let pText = rawPara;
-        if (pText.startsWith('>')) {
-          isQuote = true;
-          pText = pText.replace(/^>\s?/, '');
-        }
-
-        const effectiveMaxWidth = isQuote ? maxWidth - 28 : maxWidth;
-        if (pText.trim() === '') {
-          lines.push({ runs: [], isQuote: false, isEmpty: true, paraIdx });
-          return;
-        }
-
-        const subLines = tokenizeRunsToLines(pText, fontSize, fontFam, letterSpacing, effectiveMaxWidth);
-        subLines.forEach(sl => {
-          lines.push({ runs: sl.runs, isQuote, isEmpty: false, paraIdx, width: sl.width });
-        });
-      });
 
       return lines;
     }
@@ -2074,14 +2163,16 @@
       items.forEach(item => {
         if (item.type === 'date' || item.type === 'system') {
           const capFs = Math.max(11, fontSize * 0.68);
-          ctx.font = `600 ${capFs}px "${fontFam}"`;
-          const tw = ctx.measureText(item.text).width;
+          // 서식 파싱을 거쳐 런(Runs) 단위로 실제 너비 계산
+          const lines = tokenizeRunsToLines(item.text, capFs, fontFam, letterSpacing, containerW);
+          const maxLineWidth = lines.length > 0 ? Math.max(...lines.map(l => l.width)) : 0;
           const h = Math.round(capFs * 1.6 + 8);
           blocks.push({
             type: item.type,
             text: item.text,
+            lines: lines,
             fontSize: capFs,
-            w: tw + 24,
+            w: maxLineWidth + 24,
             h: h
           });
           totalH += h + 10;
@@ -2101,7 +2192,7 @@
           const transFs = Math.max(11, Math.round(fontSize * 0.82));
           let transLines = [];
           let transBlockH = 0;
-          const transGap = Math.round(fontSize * 0.32); // 원문과 번역문 사이 간격
+          const transGap = Math.round(fontSize * 0.32);
 
           if (item.transText) {
             transLines = tokenizeRunsToLines(item.transText, transFs, fontFam, letterSpacing, effectiveMaxW);
@@ -2835,10 +2926,61 @@
         let curY = workAreaY + Math.max(0, (workAreaH - layout.totalH) / 2);
 
         layout.blocks.forEach(b => {
-          // --- 1. 날짜 및 시스템 메시지 ---
+          // --- 1. 날짜 및 시스템 메시지 (서식 태그 렌더링 지원) ---
           if (b.type === 'date' || b.type === 'system') {
             const cx = contentX + (contentW / 2);
             const isDate = b.type === 'date';
+
+            // 날짜/알림 박스용 텍스트 및 서식 렌더러
+            const drawTagRuns = (runsList, startX, centerY, defaultColor) => {
+              runsList.forEach(line => {
+                let curX = startX;
+                line.runs.forEach(run => {
+                  // 기본 알림 폰트 크기와 가중치를 유지하면서 볼드/이탤릭 반영
+                  let fontStr = '';
+                  if (run.bold && run.italic) fontStr = `bold italic ${b.fontSize}px "${state.font}"`;
+                  else if (run.bold) fontStr = `bold ${b.fontSize}px "${state.font}"`;
+                  else if (run.italic) fontStr = `italic ${b.fontSize}px "${state.font}"`;
+                  else fontStr = `${isDate ? '600' : '500'} ${b.fontSize}px "${state.font}"`;
+
+                  ctx.font = fontStr;
+
+                  if (run.mark) {
+                    ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.55);
+                    ctx.fillRect(curX - 1, centerY - (b.fontSize * 0.55), run.width + 2, b.fontSize * 1.15);
+                  }
+
+                  ctx.fillStyle = defaultColor;
+                  let drawCharX = curX;
+                  for (let c = 0; c < run.text.length; c++) {
+                    const ch = run.text[c];
+                    ctx.fillText(ch, drawCharX, centerY);
+                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
+                  }
+
+                  if (run.strike) {
+                    ctx.strokeStyle = defaultColor;
+                    ctx.lineWidth = Math.max(1, b.fontSize * 0.08);
+                    ctx.beginPath();
+                    ctx.moveTo(curX, centerY);
+                    ctx.lineTo(curX + run.width, centerY);
+                    ctx.stroke();
+                  }
+
+                  if (run.underline) {
+                    ctx.strokeStyle = defaultColor;
+                    ctx.lineWidth = Math.max(1.2, b.fontSize * 0.08);
+                    ctx.beginPath();
+                    const underlineY = centerY + (b.fontSize * 0.52);
+                    ctx.moveTo(curX, underlineY);
+                    ctx.lineTo(curX + run.width, underlineY);
+                    ctx.stroke();
+                  }
+
+                  curX += run.width;
+                });
+              });
+            };
 
             if (state.chatTheme === 'discord') {
               ctx.save();
@@ -2851,30 +2993,41 @@
               ctx.lineTo(contentX + contentW, curY + b.h / 2);
               ctx.stroke();
 
-              ctx.fillStyle = hexToRgba(state.ink, 0.65);
-              ctx.font = `600 ${b.fontSize}px "${state.font}"`;
-              ctx.textAlign = 'center';
+              ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
-              ctx.fillText(b.text, cx, curY + (b.h / 2));
+              const textStartX = cx - ((b.w - 24) / 2);
+              drawTagRuns(b.lines, textStartX, curY + (b.h / 2), hexToRgba(state.ink, 0.7));
               ctx.restore();
             } else if (state.chatTheme === 'terminal') {
-              const tagText = isDate ? `[DATE // ${b.text}]` : `[ ! SYSTEM: ${b.text} ]`;
-              ctx.save();
-              ctx.font = `700 ${b.fontSize}px "${state.font}"`;
-              const ttw = ctx.measureText(tagText).width;
-              drawRoundRect(cx - (ttw / 2) - 12, curY, ttw + 24, b.h, 0, hexToRgba(state.ink, 0.08), hexToRgba(state.ink, 0.3), 1);
+              const capFs = b.fontSize;
+              const tagPrefix = isDate ? '[DATE // ' : '[ ! SYSTEM: ';
+              const tagSuffix = isDate ? ']' : ' ]';
+              
+              ctx.font = `700 ${capFs}px "${state.font}"`;
+              const prefixW = ctx.measureText(tagPrefix).width;
+              const suffixW = ctx.measureText(tagSuffix).width;
+              const totalW = prefixW + (b.w - 24) + suffixW;
+
+              drawRoundRect(cx - (totalW / 2) - 12, curY, totalW + 24, b.h, 0, hexToRgba(state.ink, 0.08), hexToRgba(state.ink, 0.3), 1);
+
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.font = `700 ${capFs}px "${state.font}"`;
               ctx.fillStyle = state.ink;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(tagText, cx, curY + (b.h / 2));
-              ctx.restore();
+
+              const boxStartX = cx - (totalW / 2);
+              ctx.fillText(tagPrefix, boxStartX, curY + (b.h / 2));
+              drawTagRuns(b.lines, boxStartX + prefixW, curY + (b.h / 2), state.ink);
+              ctx.font = `700 ${capFs}px "${state.font}"`;
+              ctx.fillStyle = state.ink;
+              ctx.fillText(tagSuffix, boxStartX + prefixW + (b.w - 24), curY + (b.h / 2));
             } else {
+              // 카카오톡 메신저 스타일
               drawRoundRect(cx - (b.w / 2), curY, b.w, b.h, b.h / 2, isDate ? 'rgba(0, 0, 0, 0.16)' : 'rgba(0, 0, 0, 0.13)', null, 0);
-              ctx.fillStyle = '#ffffff';
-              ctx.font = `${isDate ? '600' : '500'} ${b.fontSize}px "${state.font}"`;
-              ctx.textAlign = 'center';
+              ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
-              ctx.fillText(b.text, cx, curY + (b.h / 2));
+              const textStartX = cx - ((b.w - 24) / 2);
+              drawTagRuns(b.lines, textStartX, curY + (b.h / 2), '#ffffff');
             }
             curY += b.h + 10;
           } 
@@ -3221,52 +3374,66 @@
       let sel = val.substring(start, end);
       let newSel = '';
 
+      // 서식 태그 정의
+      const patterns = {
+        bold: { open: '**', close: '**' },
+        italic: { open: '*', close: '*' },
+        underline: { open: '__', close: '__' },
+        strike: { open: '~~', close: '~~' }
+      };
+
+      // 1. 볼드 / 기울임 토글 (3중 강조 *** 완벽 분기 및 위치 무관 제거)
       if (type === 'bold') {
-        if (sel.startsWith('***') && sel.endsWith('***') && sel.length >= 6) {
-          newSel = '*' + sel.slice(3, -3) + '*';
-        } else if (sel.startsWith('**') && sel.endsWith('**') && sel.length >= 4) {
-          newSel = sel.slice(2, -2);
-        } else if (sel.startsWith('*') && sel.endsWith('*') && sel.length >= 2) {
-          newSel = '***' + sel.slice(1, -1) + '***';
+        if (sel.includes('***')) {
+          newSel = sel.replaceAll('***', '*');
+        } else if (sel.includes('**')) {
+          newSel = sel.replaceAll('**', '');
+        } else if (sel.includes('*')) {
+          newSel = sel.replaceAll('*', '***');
         } else {
           newSel = '**' + sel + '**';
         }
       } 
       else if (type === 'italic') {
-        if (sel.startsWith('***') && sel.endsWith('***') && sel.length >= 6) {
-          newSel = '**' + sel.slice(3, -3) + '**';
-        } else if (sel.startsWith('*') && sel.endsWith('*') && !sel.startsWith('**') && sel.length >= 2) {
-          newSel = sel.slice(1, -1);
-        } else if (sel.startsWith('**') && sel.endsWith('**') && sel.length >= 4) {
-          newSel = '***' + sel.slice(2, -2) + '***';
+        if (sel.includes('***')) {
+          newSel = sel.replaceAll('***', '**');
+        } else if (sel.includes('**')) {
+          newSel = sel.replaceAll('**', '***');
+        } else if (sel.includes('*')) {
+          newSel = sel.replaceAll('*', '');
         } else {
           newSel = '*' + sel + '*';
         }
       }
+      // 2. 밑줄 토글
       else if (type === 'underline') {
-        if (sel.startsWith('__') && sel.endsWith('__') && sel.length >= 4) {
-          newSel = sel.slice(2, -2);
+        if (sel.includes('__')) {
+          newSel = sel.replaceAll('__', '');
         } else {
           newSel = '__' + sel + '__';
         }
       }
+      // 3. 취소선 토글
       else if (type === 'strike') {
-        if (sel.startsWith('~~') && sel.endsWith('~~') && sel.length >= 4) {
-          newSel = sel.slice(2, -2);
+        if (sel.includes('~~')) {
+          newSel = sel.replaceAll('~~', '');
         } else {
           newSel = '~~' + sel + '~~';
         }
       } 
+      // 4. 형광펜 토글 (바깥/안쪽 색상 치환 및 완벽 제거)
       else if (type === 'mark') {
-        const hlMatch = sel.match(/^==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==$/);
-        if (hlMatch) {
-          const currentColor = hlMatch[1] || '#ffeb3b';
-          const targetColor = param || '#ffeb3b';
-          if (currentColor.toLowerCase() === targetColor.toLowerCase()) {
-            newSel = hlMatch[2];
+        const markRegex = /==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==/;
+        if (markRegex.test(sel)) {
+          const match = sel.match(markRegex);
+          const currentColor = (match[1] || '#ffeb3b').toLowerCase();
+          const targetColor = (param || '#ffeb3b').toLowerCase();
+
+          if (currentColor === targetColor) {
+            newSel = sel.replace(markRegex, '$2');
           } else {
-            const prefix = targetColor.toLowerCase() === '#ffeb3b' ? '==' : `==${targetColor}:`;
-            newSel = `${prefix}${hlMatch[2]}==`;
+            const prefix = targetColor === '#ffeb3b' ? '==' : `==${targetColor}:`;
+            newSel = sel.replace(markRegex, `${prefix}$2==`);
           }
         } else {
           const color = param || '#ffeb3b';
