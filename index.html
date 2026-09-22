@@ -1686,6 +1686,22 @@
   </div>
 
   <script>
+    
+    // 유니코드 결합 문자 및 이모티콘을 쪼개짐 없이 배열로 변환하는 함수
+    function splitGraphemes(str) {
+      if (!str) return [];
+      if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        const segmenter = new Intl.Segmenter('ko', { granularity: 'grapheme' });
+        return Array.from(segmenter.segment(str), s => s.segment);
+      }
+      return Array.from(str);
+    }
+    
+    // 시스템 컬러 이모지까지 포함하는 폰트 폴백 헬퍼
+    function getFontFamily(fontName) {
+      return `"${fontName}", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+    }
+    
     const canvas = document.getElementById('card-canvas');
     const ctx = canvas.getContext('2d');
 
@@ -2152,16 +2168,18 @@
       };
 
       tokens.forEach(tok => {
+        const fontWithEmoji = getFontFamily(fontFam);
         let fontStr = '';
-        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
-        else if (tok.bold) fontStr = `bold ${fontSize}px "${fontFam}"`;
-        else if (tok.italic) fontStr = `italic ${fontSize}px "${fontFam}"`;
-        else fontStr = `400 ${fontSize}px "${fontFam}"`;
+        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px ${fontWithEmoji}`;
+        else if (tok.bold) fontStr = `bold ${fontSize}px ${fontWithEmoji}`;
+        else if (tok.italic) fontStr = `italic ${fontSize}px ${fontWithEmoji}`;
+        else fontStr = `400 ${fontSize}px ${fontWithEmoji}`;
 
         ctx.font = fontStr;
 
-        for (let i = 0; i < tok.text.length; i++) {
-          const ch = tok.text[i];
+        const chars = splitGraphemes(tok.text);
+        for (let i = 0; i < chars.length; i++) {
+          const ch = chars[i];
 
           // 텍스트 내 엔터(줄바꿈) 처리
           if (ch === '\n') {
@@ -2253,16 +2271,18 @@
       };
 
       tokens.forEach(tok => {
+        const fontWithEmoji = getFontFamily(fontFam);
         let fontStr = '';
-        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px "${fontFam}"`;
-        else if (tok.bold) fontStr = `bold ${fontSize}px "${fontFam}"`;
-        else if (tok.italic) fontStr = `italic ${fontSize}px "${fontFam}"`;
-        else fontStr = `400 ${fontSize}px "${fontFam}"`;
+        if (tok.bold && tok.italic) fontStr = `bold italic ${fontSize}px ${fontWithEmoji}`;
+        else if (tok.bold) fontStr = `bold ${fontSize}px ${fontWithEmoji}`;
+        else if (tok.italic) fontStr = `italic ${fontSize}px ${fontWithEmoji}`;
+        else fontStr = `400 ${fontSize}px ${fontWithEmoji}`;
 
         ctx.font = fontStr;
 
-        for (let i = 0; i < tok.text.length; i++) {
-          const ch = tok.text[i];
+        const chars = splitGraphemes(tok.text);
+        for (let i = 0; i < chars.length; i++) {
+          const ch = chars[i];
 
           // 문단 엔터 줄바꿈 처리
           if (ch === '\n') {
@@ -3021,14 +3041,16 @@
         ctx.textBaseline = 'top';
         ctx.fillStyle = state.ink;
 
+        const titleFontFamily = getFontFamily(state.font);
+
         let curTitleY = contentY;
         if (state.title) {
-          ctx.font = `700 36px "${state.font}"`;
+          ctx.font = `700 36px ${titleFontFamily}`;
           ctx.fillText(state.title, contentX, curTitleY);
           curTitleY += 48;
         }
         if (state.subtitle) {
-          ctx.font = `500 24px "${state.font}"`;
+          ctx.font = `500 24px ${titleFontFamily}`;
           ctx.globalAlpha = 0.65;
           ctx.fillText(state.subtitle, contentX, curTitleY);
           curTitleY += 36;
@@ -3187,8 +3209,9 @@
             // 1) 글자색: 부분 글자색(run.textColor)이 지정되어 있으면 그 색을 쓰고, 없으면 기본 전체 글자색(state.ink) 사용
             ctx.fillStyle = run.textColor || state.ink;
             let drawCharX = curX;
-            for (let c = 0; c < run.text.length; c++) {
-              const ch = run.text[c];
+            const runChars = splitGraphemes(run.text);
+            for (let c = 0; c < runChars.length; c++) {
+              const ch = runChars[c];
               ctx.fillText(ch, drawCharX, lineY);
               drawCharX += ctx.measureText(ch).width + state.letterSpacing;
             }
@@ -3246,11 +3269,12 @@
                 let curX = startX;
                 line.runs.forEach(run => {
                   // 기본 알림 폰트 크기와 가중치를 유지하면서 볼드/이탤릭 반영
+                  const emojiFontList = `"${state.font}", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
                   let fontStr = '';
-                  if (run.bold && run.italic) fontStr = `bold italic ${b.fontSize}px "${state.font}"`;
-                  else if (run.bold) fontStr = `bold ${b.fontSize}px "${state.font}"`;
-                  else if (run.italic) fontStr = `italic ${b.fontSize}px "${state.font}"`;
-                  else fontStr = `${isDate ? '600' : '500'} ${b.fontSize}px "${state.font}"`;
+                  if (run.bold && run.italic) fontStr = `bold italic ${b.fontSize}px ${emojiFontList}`;
+                  else if (run.bold) fontStr = `bold ${b.fontSize}px ${emojiFontList}`;
+                  else if (run.italic) fontStr = `italic ${b.fontSize}px ${emojiFontList}`;
+                  else fontStr = `${isDate ? '600' : '500'} ${b.fontSize}px ${emojiFontList}`;
 
                   ctx.font = fontStr;
 
@@ -3261,9 +3285,10 @@
 
                   ctx.fillStyle = run.textColor || defaultColor;
                   let drawCharX = curX;
-                  for (let c = 0; c < run.text.length; c++) {
-                    const ch = run.text[c];
-                    ctx.fillText(ch, drawCharX, centerY);
+                  const runChars = Array.from(run.text);
+                  for (let c = 0; c < runChars.length; c++) {
+                    const ch = runChars[c];
+                    ctx.fillText(ch, drawCharX, lineY); // 또는 centerY
                     drawCharX += ctx.measureText(ch).width + state.letterSpacing;
                   }
 
@@ -3360,8 +3385,9 @@
 
                   ctx.fillStyle = hexToRgba(run.textColor || textColor, alpha);
                   let drawCharX = curX;
-                  for (let c = 0; c < run.text.length; c++) {
-                    const ch = run.text[c];
+                  const runChars = splitGraphemes(run.text);
+                  for (let c = 0; c < runChars.length; c++) {
+                    const ch = runChars[c];
                     ctx.fillText(ch, drawCharX, lineY);
                     drawCharX += ctx.measureText(ch).width + state.letterSpacing;
                   }
@@ -3499,26 +3525,27 @@
         const bottomY = canvas.height - state.padding;
         ctx.textBaseline = 'alphabetic';
         ctx.fillStyle = state.ink;
+        const credFontFamily = getFontFamily(state.font);
 
         if (state.credPlace === 'inline') {
           let currentX = state.padding;
           ctx.textAlign = 'left';
 
           if (hasChar) {
-            ctx.font = `700 ${state.credSize}px "${state.font}"`;
+            ctx.font = `700 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.85;
             ctx.fillText(state.charName, currentX, bottomY);
             currentX += ctx.measureText(state.charName).width;
           }
           if (hasChar && hasCreator) {
-            ctx.font = `400 ${state.credSize}px "${state.font}"`;
+            ctx.font = `400 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.5;
             const divider = '  ·  ';
             ctx.fillText(divider, currentX, bottomY);
             currentX += ctx.measureText(divider).width;
           }
           if (hasCreator) {
-            ctx.font = `400 ${state.credSize}px "${state.font}"`;
+            ctx.font = `400 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.65;
             ctx.fillText(state.creator, currentX, bottomY);
           }
@@ -3527,27 +3554,27 @@
           const credGap = state.credSize * 1.5;
 
           if (hasChar && hasCreator) {
-            ctx.font = `700 ${state.credSize}px "${state.font}"`;
+            ctx.font = `700 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.85;
             ctx.fillText(state.charName, canvas.width - state.padding, bottomY - credGap);
 
-            ctx.font = `400 ${state.credSize}px "${state.font}"`;
+            ctx.font = `400 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.65;
             ctx.fillText(state.creator, canvas.width - state.padding, bottomY);
           } else {
-            ctx.font = hasChar ? `700 ${state.credSize}px "${state.font}"` : `400 ${state.credSize}px "${state.font}"`;
+            ctx.font = hasChar ? `700 ${state.credSize}px ${credFontFamily}` : `400 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.75;
             ctx.fillText(state.charName || state.creator, canvas.width - state.padding, bottomY);
           }
         } else if (state.credPlace === 'split') {
           if (hasChar) {
-            ctx.font = `700 ${state.credSize}px "${state.font}"`;
+            ctx.font = `700 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.85;
             ctx.textAlign = 'left';
             ctx.fillText(state.charName, state.padding, bottomY);
           }
           if (hasCreator) {
-            ctx.font = `400 ${state.credSize}px "${state.font}"`;
+            ctx.font = `400 ${state.credSize}px ${credFontFamily}`;
             ctx.globalAlpha = 0.65;
             ctx.textAlign = 'right';
             ctx.fillText(state.creator, canvas.width - state.padding, bottomY);
