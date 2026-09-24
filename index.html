@@ -1250,7 +1250,14 @@
         </div>
 
         <textarea id="in-text">내용을 입력하세요! ( _ _)♡</textarea>
+        
+        <!-- 일반 모드 안내사항 -->
+        <div class="chat-guide-tip" id="normal-syntax-guide">
+          💡 <b>[1]~[6]</b>: 말풍선 삽입 / <b>[-]</b>: 번역<br>
+          <span style="font-size: 11px; opacity: 0.85;">*말풍선은 <b>채팅 모드</b>에서 지정한 테마와 프로필 설정이 적용됩니다.</span>
+        </div>
           
+        <!-- 채팅 모드 안내사항 -->
         <div class="chat-guide-tip" id="chat-syntax-guide" style="display:none;">
           💡 <b>[1]~[6]:</b> 프로필별 채팅 / <b>[-]:</b> 번역 / <b>[s]:</b> 시스템 알림
         </div>
@@ -1828,7 +1835,7 @@
           if (profileCount === 0) { finalizeSave(); return; }
 
           dataToSave.profiles.forEach(p => {
-            compressDataUrl(p.avatarData, 400, 400, (compAvatar) => {
+            compressDataUrl(p.avatarData, 800, 800, (compAvatar) => {
               if (compAvatar) p.avatarData = compAvatar;
               processed++;
               if (processed === profileCount) finalizeSave();
@@ -1848,10 +1855,16 @@
       document.querySelectorAll('#mode-tab-bar .mode-tab-btn').forEach(btn => {
         btn.classList.toggle('on', btn.dataset.mode === state.mode);
       });
+      
       const isChat = state.mode === 'chat';
       document.getElementById('chat-profiles-panel').style.display = isChat ? 'flex' : 'none';
       document.getElementById('chat-quick-tools').style.display = isChat ? 'flex' : 'none';
       document.getElementById('chat-syntax-guide').style.display = isChat ? 'block' : 'none'; // ← 이 줄 추가
+      
+      // 일반 모드
+      const normalGuide = document.getElementById('normal-syntax-guide');
+      if (normalGuide) normalGuide.style.display = isChat ? 'none' : 'block';
+      
       document.getElementById('normal-insert-group').style.display = isChat ? 'none' : 'block';
       document.getElementById('text-field-label').innerText = isChat ? '채팅 대화 내용' : '본문 내용';
       syncCurrentProfileUI();
@@ -2113,11 +2126,11 @@
     }
 
     // 중첩 재귀 마크다운 파서 (형광펜 + 밑줄 동시 중첩 완벽 지원)
+    // 중첩 재귀 마크다운 파서 (그룹 인덱스 밀림 문제 완전 해결)
     function parseFormattedText(text, currentStyle = { bold: false, italic: false, underline: false, strike: false, mark: false, markColor: null, textColor: null }) {
       if (!text) return [];
       const tokens = [];
-      // 정규식에 {{...}} 패턴 추가
-      const pattern = /\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)\}\}|==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|__([\s\S]*?)__|\*\*\*([\s\S]*?)\*\*\*|\*\*([\s\S]*?)\*\*|\*([\s\S]*?)\*|~~([\s\S]*?)~~/g;
+      const pattern = /\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)\}\}|==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|__([\s\S]*?)__|(\*\*\*[\s\S]*?\*\*\*|\*\*[\s\S]*?\*\*|\*[\s\S]*?\*|~~[\s\S]*?~~)/g;
       
       let lastIndex = 0;
       let match;
@@ -2128,25 +2141,27 @@
           tokens.push({ text: plain, ...currentStyle });
         }
 
-        if (match[0].startsWith('{{')) {
-          const color = match[1] || state.textColor || '#e11d48';
-          const inner = match[2];
+        const full = match[0];
+        if (full.startsWith('{{')) {
+          const colorMatch = full.match(/^\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*)\}\}$/);
+          const color = (colorMatch && colorMatch[1]) ? colorMatch[1] : (state.textColor || '#e11d48');
+          const inner = colorMatch ? colorMatch[2] : full.slice(2, -2);
           tokens.push(...parseFormattedText(inner, { ...currentStyle, textColor: color }));
-        } else if (match[0].startsWith('==')) {
-          const color = match[3] || '#ffeb3b';
-          const inner = match[4];
+        } else if (full.startsWith('==')) {
+          const markMatch = full.match(/^==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==$/);
+          const color = (markMatch && markMatch[1]) ? markMatch[1] : '#ffeb3b';
+          const inner = markMatch ? markMatch[2] : full.slice(2, -2);
           tokens.push(...parseFormattedText(inner, { ...currentStyle, mark: true, markColor: color }));
-        } else if (match[0].startsWith('__')) {
-          const inner = match[5];
-          tokens.push(...parseFormattedText(inner, { ...currentStyle, underline: true }));
-        } else if (match[0].startsWith('***')) {
-          tokens.push(...parseFormattedText(match[6], { ...currentStyle, bold: true, italic: true }));
-        } else if (match[0].startsWith('**')) {
-          tokens.push(...parseFormattedText(match[7], { ...currentStyle, bold: true }));
-        } else if (match[0].startsWith('*')) {
-          tokens.push(...parseFormattedText(match[8], { ...currentStyle, italic: true }));
-        } else if (match[0].startsWith('~~')) {
-          tokens.push(...parseFormattedText(match[9], { ...currentStyle, strike: true }));
+        } else if (full.startsWith('__')) {
+          tokens.push(...parseFormattedText(full.slice(2, -2), { ...currentStyle, underline: true }));
+        } else if (full.startsWith('***')) {
+          tokens.push(...parseFormattedText(full.slice(3, -3), { ...currentStyle, bold: true, italic: true }));
+        } else if (full.startsWith('**')) {
+          tokens.push(...parseFormattedText(full.slice(2, -2), { ...currentStyle, bold: true }));
+        } else if (full.startsWith('*')) {
+          tokens.push(...parseFormattedText(full.slice(1, -1), { ...currentStyle, italic: true }));
+        } else if (full.startsWith('~~')) {
+          tokens.push(...parseFormattedText(full.slice(2, -2), { ...currentStyle, strike: true }));
         }
 
         lastIndex = pattern.lastIndex;
@@ -2345,8 +2360,29 @@
       ctx.beginPath();
       ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
       ctx.clip();
+
+      // 축소 시 픽셀 계단현상 방지
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
       if (img) {
-        ctx.drawImage(img, x, y, size, size);
+        // 찌그러짐 방지: 중앙 기준 Cover 크롭 계산
+        const imgRatio = img.width / img.height;
+        let sWidth, sHeight, sx, sy;
+
+        if (imgRatio > 1) {
+          sHeight = img.height;
+          sWidth = img.height;
+          sx = (img.width - sWidth) / 2;
+          sy = 0;
+        } else {
+          sWidth = img.width;
+          sHeight = img.width;
+          sx = 0;
+          sy = (img.height - sHeight) / 2;
+        }
+
+        ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, size, size);
       } else {
         ctx.fillStyle = '#cbd5e1';
         ctx.fillRect(x, y, size, size);
@@ -2424,6 +2460,11 @@
         ctx.stroke();
       }
       ctx.restore();
+    }
+    
+    // 일반 모드 본문에서 채팅/번역 태그가 섞여 있는지 판별하는 도우미
+    function hasChatOrTransTags(text) {
+      return /^\s*(\[([1-6]|s|-|\-:[^\]]+)\]|--.+?--)/m.test(text);
     }
 
     function parseChatItems(rawText) {
@@ -3061,8 +3102,8 @@
           ctx.globalAlpha = 1.0;
         }
       }
-
-      // [일반 모드]
+      
+      // ====================== [일반 모드] ====================== //
       if (state.mode === 'normal') {
         let imgBox = null;
         let textBox = { x: contentX, y: workAreaY, w: contentW, h: workAreaH };
@@ -3125,7 +3166,6 @@
 
         lastImgBox = imgBox ? { ...imgBox } : null;
 
-        // 삽입 이미지 그리기
         if (imgBox && state.insertImg) {
           drawCoverImage(
             state.insertImg,
@@ -3142,108 +3182,444 @@
           );
         }
 
-        // 본문 폰트 계산
-        let effectiveFontSize = state.fontSize;
-        let lines = [];
-        let bodyLineHeight = effectiveFontSize * state.lineHeightMult;
-        let totalBodyHeight = 0;
+        // --- 공통 텍스트 런 그리기 함수 ---
+        const drawFormattedRuns = (runs, startX, centerY, currentFs, defaultColor, alpha = 1.0, stripPrefix = null) => {
+          let curX = startX;
+          ctx.textBaseline = 'middle';
+          let needStrip = Boolean(stripPrefix);
 
-        while (effectiveFontSize >= 11) {
-          bodyLineHeight = effectiveFontSize * state.lineHeightMult;
-          lines = wrapFormattedParagraphs(state.text, effectiveFontSize, state.font, state.letterSpacing, textBox.w);
-          totalBodyHeight = lines.length * bodyLineHeight;
-          if (totalBodyHeight <= textBox.h) break;
-          effectiveFontSize -= 1;
-        }
-
-        let textStartY = textBox.y + Math.max(0, (textBox.h - totalBodyHeight) / 2);
-
-        // 인용구 라인 바 처리 (연속된 인용 라인은 하나의 긴 막대로 병합)
-        const quoteBlocks = [];
-        let currentQuote = null;
-
-        lines.forEach((line, idx) => {
-          if (line.isQuote && !line.isEmpty) {
-            const lineTop = textStartY + (idx * bodyLineHeight);
-            if (!currentQuote) {
-              currentQuote = { startY: lineTop, lastLineY: lineTop };
-              quoteBlocks.push(currentQuote);
-            } else {
-              currentQuote.lastLineY = lineTop;
+          runs.forEach(run => {
+            let txt = run.text;
+            if (needStrip && stripPrefix) {
+              if (stripPrefix.test(txt)) {
+                txt = txt.replace(stripPrefix, '');
+                needStrip = false;
+              }
             }
-          } else {
-            currentQuote = null;
-          }
-        });
+            if (!txt) return;
 
-        quoteBlocks.forEach(qb => {
-          ctx.fillStyle = state.ink;
-          ctx.globalAlpha = 0.35;
-          const topY = qb.startY - 4;
-          const bottomY = qb.lastLineY + effectiveFontSize + 4;
-          const barHeight = Math.max(0, bottomY - topY);
+            const emojiFont = getFontFamily(state.font);
+            if (run.bold && run.italic) ctx.font = `bold italic ${currentFs}px ${emojiFont}`;
+            else if (run.bold) ctx.font = `bold ${currentFs}px ${emojiFont}`;
+            else if (run.italic) ctx.font = `italic ${currentFs}px ${emojiFont}`;
+            else ctx.font = `400 ${currentFs}px ${emojiFont}`;
 
-          if (ctx.roundRect) {
-            ctx.beginPath();
-            ctx.roundRect(textBox.x, topY, 4, barHeight, 2);
-            ctx.fill();
-          } else {
-            ctx.fillRect(textBox.x, topY, 4, barHeight);
-          }
-          ctx.globalAlpha = 1.0;
-        });
-
-        // 본문 글자 출력
-        ctx.textBaseline = 'top';
-        lines.forEach((line, lineIdx) => {
-          const lineY = textStartY + (lineIdx * bodyLineHeight);
-          if (line.isEmpty) return;
-
-          let curX = textBox.x;
-          if (line.isQuote) curX += 20;
-
-          line.runs.forEach(run => {
-            ctx.font = run.fontStr;
+            let runW = 0;
+            const runChars = splitGraphemes(txt);
+            runChars.forEach(ch => { runW += ctx.measureText(ch).width + state.letterSpacing; });
 
             if (run.mark) {
-              ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48);
-              ctx.fillRect(curX - 1, lineY - (effectiveFontSize * 0.05), run.width + 2, effectiveFontSize * 1.15);
+              ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48 * alpha);
+              ctx.fillRect(curX - 1, centerY - (currentFs * 0.55), runW + 2, currentFs * 1.15);
             }
 
-            // 1) 글자색: 부분 글자색(run.textColor)이 지정되어 있으면 그 색을 쓰고, 없으면 기본 전체 글자색(state.ink) 사용
-            ctx.fillStyle = run.textColor || state.ink;
+            ctx.fillStyle = hexToRgba(run.textColor || defaultColor, alpha);
             let drawCharX = curX;
-            const runChars = splitGraphemes(run.text);
             for (let c = 0; c < runChars.length; c++) {
               const ch = runChars[c];
-              ctx.fillText(ch, drawCharX, lineY);
+              ctx.fillText(ch, drawCharX, centerY);
               drawCharX += ctx.measureText(ch).width + state.letterSpacing;
             }
 
-            // 2) 취소선: 글자색에 맞춰 함께 변경
             if (run.strike) {
-              ctx.strokeStyle = run.textColor || state.ink;
-              ctx.lineWidth = Math.max(1, effectiveFontSize * 0.08);
+              ctx.strokeStyle = hexToRgba(run.textColor || defaultColor, alpha);
+              ctx.lineWidth = Math.max(1.2, currentFs * 0.08);
               ctx.beginPath();
-              const strikeY = lineY + (effectiveFontSize * 0.62);
-              ctx.moveTo(curX, strikeY);
-              ctx.lineTo(curX + run.width, strikeY);
+              ctx.moveTo(curX, centerY);
+              ctx.lineTo(curX + runW, centerY);
               ctx.stroke();
             }
 
-            // 3) 밑줄: 글자색에 맞춰 함께 변경
             if (run.underline) {
-              ctx.strokeStyle = run.textColor || state.ink;
-              ctx.lineWidth = Math.max(1.2, effectiveFontSize * 0.08);
+              ctx.strokeStyle = hexToRgba(run.textColor || defaultColor, alpha);
+              ctx.lineWidth = Math.max(1.5, currentFs * 0.08);
               ctx.beginPath();
-              const underlineY = lineY + (effectiveFontSize * 1.02);
+              const underlineY = centerY + (currentFs * 0.52);
               ctx.moveTo(curX, underlineY);
-              ctx.lineTo(curX + run.width, underlineY);
+              ctx.lineTo(curX + runW, underlineY);
               ctx.stroke();
             }
 
-            curX += run.width;
+            curX += runW;
           });
+          return curX;
+        };
+
+        // --- 일반 모드 복합 블록(채팅/일반 본문) 파싱 & 동적 레이아웃 함수 ---
+        function parseNormalBlocks(rawText, fs, containerW) {
+          const blocks = [];
+          const avatarSize = Math.max(34, fs * 1.6);
+          const nameFontSize = Math.max(12, fs * 0.74);
+          const nameHeaderH = nameFontSize + 6;
+          const bubblePadX = Math.round(fs * 0.88);
+          const bubblePadY = Math.round(fs * 0.65);
+          const lineSpacing = fs * (state.lineHeightMult - 1);
+          const transFs = Math.max(11, Math.round(fs * 0.82));
+          const transGap = Math.round(fs * 0.35);
+          const transLineSpacing = transFs * (state.lineHeightMult - 1);
+          const theme = state.chatTheme || 'kakao';
+
+          // 1. 줄 단위 원본 추출
+          const rawLines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+          for (let i = 0; i < rawLines.length; i++) {
+            const line = rawLines[i];
+            const trimmed = line.trim();
+
+            if (!trimmed) {
+              blocks.push({ type: 'empty', height: fs * state.lineHeightMult });
+              continue;
+            }
+
+            // A. [1]~[6] 채팅인 경우
+            const chatMatch = trimmed.match(/^\[([1-6])\]\s*(.*)$/);
+            if (chatMatch) {
+              const pIdx = parseInt(chatMatch[1], 10) - 1;
+              const prof = state.profiles[pIdx] || state.profiles[0];
+              const msgContent = chatMatch[2];
+
+              // 다음 줄이 [-] 번역문인지 확인
+              let transContent = null;
+              if (i + 1 < rawLines.length) {
+                const nextTrimmed = rawLines[i + 1].trim();
+                const transMatch = nextTrimmed.match(/^\[-\]\s*(.*)$/);
+                if (transMatch) {
+                  transContent = transMatch[1];
+                  i++;
+                }
+              }
+
+              const maxBubbleW = (theme === 'discord')
+                ? (containerW - (prof.showAvatar ? avatarSize + 16 : 0) - 20)
+                : (containerW * 0.65);
+              
+              const textMaxW = (theme === 'discord') ? maxBubbleW : (maxBubbleW - bubblePadX * 2);
+
+              const lines = tokenizeRunsToLines(msgContent, fs, state.font, state.letterSpacing, textMaxW);
+              let maxLineW = 0;
+              lines.forEach(l => { if (l.width > maxLineW) maxLineW = l.width; });
+
+              let transLines = [];
+              let transBlockH = 0;
+              if (transContent !== null) {
+                transLines = tokenizeRunsToLines(transContent, transFs, state.font, state.letterSpacing, textMaxW);
+                transLines.forEach(l => { if (l.width > maxLineW) maxLineW = l.width; });
+                transBlockH = transGap + (transLines.length * transFs) + Math.max(0, transLines.length - 1) * transLineSpacing;
+              }
+
+              const textBlockH = (lines.length * fs) + Math.max(0, lines.length - 1) * lineSpacing + transBlockH;
+              let bubbleW, bubbleH, blockH;
+
+              if (theme === 'discord') {
+                bubbleW = maxLineW;
+                bubbleH = textBlockH;
+                const contentH = nameHeaderH + textBlockH;
+                blockH = prof.showAvatar ? Math.max(contentH, avatarSize) : contentH;
+              } else {
+                bubbleW = Math.max(fs * 1.4, maxLineW + (bubblePadX * 2));
+                bubbleH = textBlockH + (bubblePadY * 2);
+                const contentH = nameHeaderH + bubbleH;
+                blockH = prof.showAvatar ? Math.max(contentH, avatarSize) : contentH;
+              }
+
+              let nextIsChat = false;
+              for (let n = i + 1; n < rawLines.length; n++) {
+                const nTrim = rawLines[n].trim();
+                if (!nTrim || nTrim.startsWith('[-]')) continue;
+                nextIsChat = /^\[[1-6]\]/.test(nTrim);
+                break;
+              }
+
+              const bottomMargin = nextIsChat
+                ? Math.round(fs * ((theme === 'discord') ? 0.75 : 0.35))
+                : Math.round(fs * 1.5);
+
+              blocks.push({
+                type: 'chat',
+                prof,
+                lines,
+                transLines,
+                transFs,
+                transGap,
+                transLineSpacing,
+                bubbleW,
+                bubbleH,
+                blockH,
+                bottomMargin,
+                avatarSize,
+                nameFontSize,
+                nameHeaderH,
+                lineSpacing,
+                bubblePadX,
+                bubblePadY,
+                height: blockH + bottomMargin
+              });
+
+            } else {
+              // B. 일반 본문 문단 처리 (엔터 줄바꿈 및 번역문 통합 수집)
+              let normalLines = [line];
+              let transLinesList = [];
+              const isFirstLineQuote = line.trim().startsWith('>'); // ★ 시작 줄의 인용구 여부 기억
+
+              // 다음 줄들이 같은 일반 지문이거나 [-] 번역문이면 한 덩어리로 묶음
+              while (i + 1 < rawLines.length) {
+                const peekTrimmed = rawLines[i + 1].trim();
+                if (!peekTrimmed) break; // 빈 줄이면 문단 구분
+                if (/^\[[1-6]\]/.test(peekTrimmed)) break; // 다음 줄이 채팅이면 중단
+
+                // ★ 다음 줄이 인용구 <-> 비인용구로 상태가 바뀌면 묶지 않고 분리!
+                const isNextQuote = peekTrimmed.startsWith('>');
+                if (!peekTrimmed.startsWith('[-]') && isFirstLineQuote !== isNextQuote) break;
+
+                const transMatch = peekTrimmed.match(/^\[-\]\s*([\s\S]*)$/);
+                if (transMatch) {
+                  transLinesList.push(transMatch[1]);
+                } else {
+                  if (transLinesList.length > 0) break; // 이미 번역문이 나온 후 다른 일반 줄이 오면 분리
+                  normalLines.push(rawLines[i + 1]);
+                }
+                i++;
+              }
+
+              let rawNormal = normalLines.join('\n');
+              const isQuote = normalLines[0].trim().startsWith('>');
+              if (isQuote) {
+                rawNormal = normalLines.map(l => l.replace(/^>\s?/, '')).join('\n');
+              }
+              const maxW = isQuote ? containerW - 28 : containerW;
+
+              let transContent = null;
+              if (transLinesList.length > 0) {
+                let rawTrans = transLinesList.join('\n');
+
+                // 원문과 번역문 간에 걸쳐진 서식 태그 보정
+                const unclosedColor = rawNormal.match(/(\{\{(?:#[0-9A-Fa-f]{3,6})?:)(?![\s\S]*\}\})/);
+                const unclosedMark = rawNormal.match(/(==(?:#[0-9A-Fa-f]{3,6})?:)(?![\s\S]*==)/);
+                const unclosedBold = (rawNormal.match(/\*\*/g) || []).length % 2 === 1;
+                const unclosedUnderline = (rawNormal.match(/__/g) || []).length % 2 === 1;
+                const unclosedStrike = (rawNormal.match(/~~/g) || []).length % 2 === 1;
+
+                if (unclosedStrike) rawNormal += '~~';
+                if (unclosedUnderline) rawNormal += '__';
+                if (unclosedBold) rawNormal += '**';
+                if (unclosedMark) rawNormal += '==';
+                if (unclosedColor) rawNormal += '}}';
+
+                if (unclosedColor) rawTrans = rawTrans.replace(/\s*\}\}\s*$/, '');
+                if (unclosedMark) rawTrans = rawTrans.replace(/\s*==\s*$/, '');
+                if (unclosedBold) rawTrans = rawTrans.replace(/\s*\*\*\s*$/, '');
+                if (unclosedUnderline) rawTrans = rawTrans.replace(/\s*__\s*$/, '');
+                if (unclosedStrike) rawTrans = rawTrans.replace(/\s*~~\s*$/, '');
+
+                if (unclosedColor) rawTrans = `${unclosedColor[1]}${rawTrans}}}`;
+                if (unclosedMark) rawTrans = `${unclosedMark[1]}${rawTrans}==`;
+                if (unclosedBold) rawTrans = `**${rawTrans}**`;
+                if (unclosedUnderline) rawTrans = `__${rawTrans}__`;
+                if (unclosedStrike) rawTrans = `~~${rawTrans}~~`;
+
+                transContent = rawTrans;
+              }
+
+              // 여러 줄이 엔터로 묶인 지문 전체를 한 번에 서식 파싱 (줄바꿈 서식 유지)
+              const paraLines = tokenizeRunsToLines(rawNormal, fs, state.font, state.letterSpacing, maxW);
+              let paraH = paraLines.length * (fs * state.lineHeightMult);
+
+              let transLines = [];
+              if (transContent !== null) {
+                transLines = tokenizeRunsToLines(transContent, transFs, state.font, state.letterSpacing, maxW);
+                const transLineH = transLines.length * (transFs * state.lineHeightMult);
+                paraH += transGap + transLineH;
+              }
+
+              blocks.push({
+                type: 'normal',
+                isQuote,
+                lines: paraLines,
+                transLines,
+                transFs,
+                transGap,
+                lineHeight: fs * state.lineHeightMult,
+                height: paraH
+              });
+            }
+          }
+
+          const totalH = blocks.reduce((acc, b) => acc + b.height, 0);
+          return { blocks, totalH };
+        }
+
+        // --- 오토 스케일링 루프 ---
+        let effectiveFontSize = state.fontSize;
+        let layout = null;
+
+        while (effectiveFontSize >= 11) {
+          layout = parseNormalBlocks(state.text, effectiveFontSize, textBox.w);
+          if (layout.totalH <= textBox.h) break;
+          effectiveFontSize -= 1;
+        }
+
+        let curRenderY = textBox.y + Math.max(0, (textBox.h - layout.totalH) / 2);
+        const theme = state.chatTheme || 'kakao';
+
+        // --- 블록별 실제 렌더링 루프 ---
+        layout.blocks.forEach(b => {
+          if (b.type === 'empty') {
+            curRenderY += b.height;
+            return;
+          }
+
+          if (b.type === 'normal') {
+            let startX = textBox.x;
+            if (b.isQuote) {
+              startX += 20;
+
+              // ★ 문단의 '맨 첫 시작 글자'가 컬러로 지정되어 있을 때만 막대 색상 변경
+              // (중간 단어 부분 강조는 막대 색상에 영향 주지 않음)
+              const firstRun = (b.lines[0] && b.lines[0].runs[0]) ? b.lines[0].runs[0] : null;
+              const quoteBarColor = (firstRun && firstRun.textColor) ? firstRun.textColor : state.ink;
+
+              ctx.fillStyle = quoteBarColor;
+              ctx.globalAlpha = 0.35;
+              
+              const topY = curRenderY - 2;
+              
+              const textOnlyHeight = (b.lines.length * b.lineHeight) + 
+                (b.transLines && b.transLines.length > 0 ? (b.transGap + b.transLines.length * (b.transFs * state.lineHeightMult)) : 0);
+              
+              const barHeight = Math.max(0, textOnlyHeight - (b.lineHeight - effectiveFontSize) + 4);
+              
+              if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(textBox.x, topY, 4, barHeight, 2);
+                ctx.fill();
+              } else {
+                ctx.fillRect(textBox.x, topY, 4, barHeight);
+              }
+              ctx.globalAlpha = 1.0;
+            }
+
+            // 1. 원문 지문 렌더링
+            let lineY = curRenderY + (effectiveFontSize / 2);
+            b.lines.forEach(l => {
+              drawFormattedRuns(l.runs, startX, lineY, effectiveFontSize, state.ink, 1.0);
+              lineY += b.lineHeight;
+            });
+
+            // ★ 추가: 일반 지문용 번역문 렌더링 (82% 폰트, 65% 투명도 적용)
+            if (b.transLines && b.transLines.length > 0) {
+              let transCenterY = lineY - b.lineHeight + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
+              b.transLines.forEach(tl => {
+                drawFormattedRuns(tl.runs, startX, transCenterY, b.transFs, state.ink, 0.65);
+                transCenterY += b.transFs * state.lineHeightMult;
+              });
+            }
+
+            curRenderY += b.height;
+
+          } else if (b.type === 'chat') {
+            const prof = b.prof;
+            const isRight = prof.align === 'right';
+
+            if (theme === 'discord') {
+              let textLeft = textBox.x;
+              if (prof.showAvatar) {
+                drawAvatar(prof.avatarImg, textBox.x, curRenderY, b.avatarSize);
+                textLeft += b.avatarSize + 14;
+              }
+
+              ctx.save();
+              ctx.font = `700 ${b.nameFontSize}px "${state.font}"`;
+              ctx.fillStyle = prof.textColor;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'top';
+              ctx.fillText(prof.name, textLeft, curRenderY);
+              const nWidth = ctx.measureText(prof.name).width;
+
+              ctx.font = `400 ${Math.max(10, b.nameFontSize * 0.78)}px "${state.font}"`;
+              ctx.fillStyle = hexToRgba(state.ink, 0.45);
+              ctx.fillText('오늘', textLeft + nWidth + 8, curRenderY + 2);
+              ctx.restore();
+
+              let lineCenterY = curRenderY + b.nameHeaderH + (effectiveFontSize / 2);
+              b.lines.forEach(l => {
+                drawFormattedRuns(l.runs, textLeft, lineCenterY, effectiveFontSize, prof.textColor, 1.0);
+                lineCenterY += effectiveFontSize + b.lineSpacing;
+              });
+
+              if (b.transLines && b.transLines.length > 0) {
+                let transCenterY = lineCenterY - effectiveFontSize - b.lineSpacing + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
+                b.transLines.forEach(tl => {
+                  drawFormattedRuns(tl.runs, textLeft, transCenterY, b.transFs, prof.textColor, 0.65);
+                  transCenterY += b.transFs + b.transLineSpacing;
+                });
+              }
+
+              curRenderY += b.height;
+
+            } else {
+              // 카카오톡 및 터미널 테마
+              const isTerminal = theme === 'terminal';
+              let bx, by;
+
+              if (isRight) {
+                let rightEdge = textBox.x + textBox.w;
+                if (prof.showAvatar) {
+                  drawAvatar(prof.avatarImg, rightEdge - b.avatarSize, curRenderY, b.avatarSize);
+                  rightEdge -= (b.avatarSize + 10);
+                }
+                ctx.fillStyle = hexToRgba(state.ink, 0.75);
+                ctx.font = `${isTerminal ? '700' : '600'} ${b.nameFontSize}px "${state.font}"`;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(isTerminal ? `[ ${prof.name} ]` : prof.name, rightEdge, curRenderY);
+
+                bx = rightEdge - b.bubbleW;
+                by = curRenderY + b.nameHeaderH;
+              } else {
+                let leftEdge = textBox.x;
+                if (prof.showAvatar) {
+                  drawAvatar(prof.avatarImg, leftEdge, curRenderY, b.avatarSize);
+                  leftEdge += (b.avatarSize + 10);
+                }
+                ctx.fillStyle = hexToRgba(state.ink, 0.75);
+                ctx.font = `${isTerminal ? '700' : '600'} ${b.nameFontSize}px "${state.font}"`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(isTerminal ? `[ ${prof.name} ]` : prof.name, leftEdge, curRenderY);
+
+                bx = leftEdge;
+                by = curRenderY + b.nameHeaderH;
+              }
+
+              if (isTerminal) {
+                drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 0, prof.bubbleBg, hexToRgba(state.ink, 0.4), 1.5);
+                ctx.save();
+                ctx.fillStyle = state.ink;
+                ctx.fillRect(isRight ? bx + b.bubbleW - 4 : bx, by, 4, b.bubbleH);
+                ctx.restore();
+              } else {
+                drawRoundRect(bx, by, b.bubbleW, b.bubbleH, 14, prof.bubbleBg, 'rgba(0,0,0,0.06)', 1);
+              }
+
+              ctx.textAlign = 'left';
+
+              let lineCenterY = by + b.bubblePadY + (effectiveFontSize / 2);
+              b.lines.forEach(l => {
+                drawFormattedRuns(l.runs, bx + b.bubblePadX, lineCenterY, effectiveFontSize, prof.textColor, 1.0);
+                lineCenterY += effectiveFontSize + b.lineSpacing;
+              });
+
+              if (b.transLines && b.transLines.length > 0) {
+                let transCenterY = lineCenterY - effectiveFontSize - b.lineSpacing + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
+                b.transLines.forEach(tl => {
+                  drawFormattedRuns(tl.runs, bx + b.bubblePadX, transCenterY, b.transFs, prof.textColor, 0.65);
+                  transCenterY += b.transFs + b.transLineSpacing;
+                });
+              }
+
+              curRenderY += b.height;
+            }
+          }
         });
       }
 
@@ -3292,7 +3668,7 @@
                   const runChars = Array.from(run.text);
                   for (let c = 0; c < runChars.length; c++) {
                     const ch = runChars[c];
-                    ctx.fillText(ch, drawCharX, lineY); // 또는 centerY
+                    ctx.fillText(ch, drawCharX, centerY);
                     drawCharX += ctx.measureText(ch).width + state.letterSpacing;
                   }
 
