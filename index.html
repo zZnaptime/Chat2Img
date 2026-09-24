@@ -1704,6 +1704,10 @@
     
     const canvas = document.getElementById('card-canvas');
     const ctx = canvas.getContext('2d');
+    
+    // 캔버스 메모리 누수 방지용 캐시 캔버스
+    const cachedBlurCanvas = document.createElement('canvas');
+    const cachedPassCanvas = document.createElement('canvas');
 
     const defaultProfiles = [
       { name: 'A', align: 'right', showAvatar: true, avatarImg: null, avatarData: null, bubbleBg: '#fae100', textColor: '#371d1e' },
@@ -2693,7 +2697,7 @@
             */
 
             const blurCanvas =
-              document.createElement('canvas');
+              cachedBlurCanvas;
 
             blurCanvas.width =
               smallWidth;
@@ -2775,7 +2779,7 @@
 
 
               const passCanvas =
-                document.createElement('canvas');
+                cachedPassCanvas;
 
               passCanvas.width =
                 passWidth;
@@ -4280,17 +4284,42 @@
 
       const fileName = parts.length > 1 ? `${parts.join('_')}.png` : `${dateStr}_${state.mode === 'chat' ? '채팅' : ''}발췌.png`;
 
-      // iOS 사파리 및 모바일 브라우저 toDataURL 차단 우회 (Blob 기반 표준 다운로드)
-      canvas.toBlob((blob) => {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+      canvas.toBlob(async (blob) => {
         if (!blob) return;
+
+        // 1) iOS에서 파일 공유(Web Share API) 지원 시 사진 앱 저장 유도
+        const file = new File([blob], fileName, { type: 'image/png' });
+        if (isIOS && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: fileName
+            });
+            return;
+          } catch (err) {
+            if (err.name !== 'AbortError') console.warn(err);
+          }
+        }
+
+        // 2) 일반 PC / 안드로이드 다운로드 처리 (revoke 타이밍을 넉넉히 설정)
         const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = fileName;
-        link.href = blobUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+
+        if (isIOS) {
+          // 만약 Web Share를 취소했거나 미지원 환경인 경우 새 탭으로 띄워 길게 눌러 저장 유도
+          window.open(blobUrl, '_blank');
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 15000);
+        } else {
+          const link = document.createElement('a');
+          link.download = fileName;
+          link.href = blobUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+        }
       }, 'image/png');
     });
       
