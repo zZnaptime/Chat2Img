@@ -387,6 +387,99 @@
       font-family: 'Noto Serif KR', serif !important;
       font-size: 12.5px !important;
     }
+    
+    /* 일체형 아코디언 비율 박스 */
+    .ratio-accordion-wrap {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ratio-accordion-wrap:hover {
+      border-color: #cbd5e1;
+    }
+
+    /* 1번째 줄 */
+    .ratio-main-row {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 4px !important;
+    }
+
+    /* 더보기 화살표 버튼 */
+    #btn-ratio-expand {
+      flex: 0 0 34px !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: #64748b !important;
+      font-size: 10px !important;
+      transition: all 0.2s ease !important;
+    }
+    #btn-ratio-expand:hover {
+      color: #51aae1 !important;
+    }
+    .expand-arrow {
+      display: inline-block;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: center;
+      line-height: 1;
+    }
+    .ratio-accordion-wrap.open .expand-arrow {
+      transform: rotate(180deg);
+      color: #51aae1;
+    }
+
+    /* 슬라이드 확장 영역 */
+    .ratio-extra-inner {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    }
+    .ratio-accordion-wrap.open .ratio-extra-inner {
+      max-height: 60px;
+      opacity: 1;
+      border-top: 1px dashed #dbeafe; /* 은은한 구분선 */
+    }
+
+    /* 2번째 줄 버튼 그리드 */
+    .ratio-sub-row {
+      background: rgba(238, 246, 251, 0.6) !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 4px !important;
+      gap: 5px !important;
+    }
+
+    /* 서브 버튼 내부 2줄 */
+    .btn-extra-ratio {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 4px 0 !important;
+      gap: 1px !important;
+      line-height: 1.15 !important;
+    }
+    .btn-extra-ratio .ratio-name {
+      font-size: 11px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .btn-extra-ratio .ratio-sub {
+      font-size: 9px;
+      font-weight: 600;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .btn-extra-ratio.on .ratio-sub {
+      opacity: 0.9;
+      color: #51aae1;
+    }
 
     /* 슬라이더 커스텀 & 동적 게이지 트랙 */
     .range-row {
@@ -1502,10 +1595,35 @@
 
       <div class="field-group">
         <span class="label-sub">카드 비율</span>
-        <div class="seg-buttons" id="ratio-group">
-          <button data-ratio="1:1" class="on">1 : 1</button>
-          <button data-ratio="4:5">4 : 5</button>
-          <button data-ratio="16:9">16 : 9</button>
+        <!-- 일체형 비율 박스 컨테이너 -->
+        <div class="ratio-accordion-wrap">
+          <div class="seg-buttons ratio-main-row" id="ratio-group">
+            
+            <button data-ratio="1:1" class="on">1 : 1</button>
+            <button data-ratio="4:5">4 : 5</button>
+            <button data-ratio="16:9">16 : 9</button>
+            
+            <button type="button" id="btn-ratio-expand" title="비율 더보기">
+              <span class="expand-arrow">▼</span>
+            </button>
+          </div>
+
+          <div class="ratio-extra-inner" id="ratio-extra-group">
+            <div class="seg-buttons ratio-sub-row">
+              <button data-ratio="3:1" class="btn-extra-ratio">
+                <span class="ratio-name">헤더</span>
+                <span class="ratio-sub">3:1</span>
+              </button>
+              <button data-ratio="9:16" class="btn-extra-ratio">
+                <span class="ratio-name">스토리</span>
+                <span class="ratio-sub">9:16</span>
+              </button>
+              <button data-ratio="3:4" class="btn-extra-ratio">
+                <span class="ratio-name">포토카드</span>
+                <span class="ratio-sub">3:4</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
         
@@ -1711,6 +1829,8 @@
     
     const canvas = document.getElementById('card-canvas');
     const ctx = canvas.getContext('2d');
+    
+    const ratioAccordionWrap = document.querySelector('.ratio-accordion-wrap');
     
     // 캔버스 메모리 누수 방지용 캐시 캔버스
     const cachedBlurCanvas = document.createElement('canvas');
@@ -1974,8 +2094,20 @@
           });
         };
         syncGroup('font-group', 'font', state.font);
-        syncGroup('ratio-group', 'ratio', state.ratio);
+        
+        // 카드 비율 상태 복원 (메인 + 추가 비율 통합 동기화)
+        document.querySelectorAll('#ratio-group button:not(#btn-ratio-expand), #ratio-extra-group button').forEach(b => {
+          b.classList.toggle('on', b.dataset.ratio === state.ratio);
+        });
+        // 만약 저장된 비율이 서브 비율(헤더/스토리/포토카드)이면 자동으로 아코디언 열어두기
+        if (['3:1', '9:16', '3:4'].includes(state.ratio)) {
+          ratioAccordionWrap.classList.add('open');
+        } else {
+          ratioAccordionWrap.classList.remove('open');
+        }
+
         syncGroup('credplace-group', 'place', state.credPlace);
+        
         syncGroup('frame-group', 'frame', state.frameStyle);
         syncGroup('insert-pos-group', 'pos', state.insertPos);
         syncGroup('bgtype-group', 'bgtype', state.bgType);
@@ -2059,15 +2191,30 @@
 
     function updateDimensions() {
       const base = 1200;
+      // 정방형
       if (state.ratio === '1:1') {
         canvas.width = base;
         canvas.height = base;
+        // 4:5
       } else if (state.ratio === '4:5') {
         canvas.width = base;
         canvas.height = (base * 5) / 4;
+        // 16:9
       } else if (state.ratio === '16:9') {
         canvas.width = (base * 16) / 9;
         canvas.height = base;
+      } else if (state.ratio === '3:1') {
+        // 헤더
+        canvas.width = 1500;
+        canvas.height = 500;
+      } else if (state.ratio === '9:16') {
+        // 스토리
+        canvas.width = base;
+        canvas.height = Math.round((base * 16) / 9);
+      } else if (state.ratio === '3:4') {
+        // 포토카드
+        canvas.width = base;
+        canvas.height = Math.round((base * 4) / 3);
       }
     }
 
@@ -2524,7 +2671,9 @@
       const avatarSize = Math.max(34, fontSize * 1.6);
       const nameFontSize = Math.max(12, fontSize * 0.74);
       const nameHeaderH = nameFontSize + 6;
-      const lineSpacing = fontSize * (lineHeightMult - 1);
+      
+      const chatLhMult = 1.32;
+      const lineSpacing = Math.round(fontSize * (chatLhMult - 1));
       const bubblePadX = Math.round(fontSize * 0.88);
       const bubblePadY = Math.round(fontSize * 0.65);
       const maxBubbleW = containerW * 0.65;
@@ -2560,15 +2709,15 @@
           lines.forEach(l => { if (l.width > maxLineWidth) maxLineWidth = l.width; });
 
           // 2. 번역문 줄바꿈 계산 (폰트 크기 82%)
-          const transFs = Math.max(11, Math.round(fontSize * 0.82));
+          const transFs = Math.max(11, Math.round(fontSize * 0.80));
           let transLines = [];
           let transBlockH = 0;
-          const transGap = Math.round(fontSize * 0.32);
+          const transGap = Math.round(fontSize * 0.28);
 
           if (item.transText) {
             transLines = tokenizeRunsToLines(item.transText, transFs, fontFam, letterSpacing, effectiveMaxW);
             transLines.forEach(l => { if (l.width > maxLineWidth) maxLineWidth = l.width; });
-            transBlockH = transGap + (transLines.length * transFs) + ((transLines.length - 1) * (transFs * (lineHeightMult - 1)));
+            transBlockH = transGap + (transLines.length * transFs) + ((transLines.length - 1) * Math.round(transFs * (chatLhMult - 1)));
           }
           
           const textBlockH = (lines.length * fontSize) + ((lines.length - 1) * lineSpacing) + transBlockH;
@@ -3188,7 +3337,8 @@
           ctx.textBaseline = 'middle';
           let needStrip = Boolean(stripPrefix);
 
-          runs.forEach(run => {
+          // [수정 후]
+          runs.forEach((run, rIdx) => {
             let txt = run.text;
             if (needStrip && stripPrefix) {
               if (stripPrefix.test(txt)) {
@@ -3208,9 +3358,18 @@
             const runChars = splitGraphemes(txt);
             runChars.forEach(ch => { runW += ctx.measureText(ch).width + state.letterSpacing; });
 
+            // ★ 형광펜 겹침 방지 처리 ★
             if (run.mark) {
+              const prevRun = runs[rIdx - 1];
+              const nextRun = runs[rIdx + 1];
+              const isPrevConnected = prevRun && prevRun.mark && (prevRun.markColor || '#ffeb3b').toLowerCase() === (run.markColor || '#ffeb3b').toLowerCase();
+              const isNextConnected = nextRun && nextRun.mark && (nextRun.markColor || '#ffeb3b').toLowerCase() === (run.markColor || '#ffeb3b').toLowerCase();
+
+              const markX = isPrevConnected ? curX : curX - 1;
+              const markW = runW + (isPrevConnected ? 0 : 1) + (isNextConnected ? 0 : 1);
+
               ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48 * alpha);
-              ctx.fillRect(curX - 1, centerY - (currentFs * 0.55), runW + 2, currentFs * 1.15);
+              ctx.fillRect(markX, centerY - (currentFs * 0.55), markW, currentFs * 1.15);
             }
 
             ctx.fillStyle = hexToRgba(run.textColor || defaultColor, alpha);
@@ -3253,10 +3412,13 @@
           const nameHeaderH = nameFontSize + 6;
           const bubblePadX = Math.round(fs * 0.88);
           const bubblePadY = Math.round(fs * 0.65);
-          const lineSpacing = fs * (state.lineHeightMult - 1);
-          const transFs = Math.max(11, Math.round(fs * 0.82));
-          const transGap = Math.round(fs * 0.35);
-          const transLineSpacing = transFs * (state.lineHeightMult - 1);
+          
+          const chatLhMult = 1.32; // 메신저 전용 행간
+          const lineSpacing = Math.round(fs * (chatLhMult - 1));
+          const transFs = Math.max(11, Math.round(fs * 0.80));
+          const transGap = Math.round(fs * 0.28);
+          const transLineSpacing = Math.round(transFs * (chatLhMult - 1));
+          
           const theme = state.chatTheme || 'kakao';
 
           // 1. 줄 단위 원본 추출
@@ -3540,17 +3702,20 @@
               ctx.fillText('오늘', textLeft + nWidth + 8, curRenderY + 2);
               ctx.restore();
 
+              const chatLineStep = effectiveFontSize + b.lineSpacing;
               let lineCenterY = curRenderY + b.nameHeaderH + (effectiveFontSize / 2);
+
               b.lines.forEach(l => {
                 drawFormattedRuns(l.runs, textLeft, lineCenterY, effectiveFontSize, prof.textColor, 1.0);
-                lineCenterY += effectiveFontSize + b.lineSpacing;
+                lineCenterY += chatLineStep;
               });
 
               if (b.transLines && b.transLines.length > 0) {
-                let transCenterY = lineCenterY - effectiveFontSize - b.lineSpacing + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
+                const transLineStep = b.transFs + b.transLineSpacing;
+                let transCenterY = (lineCenterY - chatLineStep) + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
                 b.transLines.forEach(tl => {
                   drawFormattedRuns(tl.runs, textLeft, transCenterY, b.transFs, prof.textColor, 0.65);
-                  transCenterY += b.transFs + b.transLineSpacing;
+                  transCenterY += transLineStep;
                 });
               }
 
@@ -3603,17 +3768,20 @@
 
               ctx.textAlign = 'left';
 
+              const chatLineStep = effectiveFontSize + b.lineSpacing;
               let lineCenterY = by + b.bubblePadY + (effectiveFontSize / 2);
+
               b.lines.forEach(l => {
                 drawFormattedRuns(l.runs, bx + b.bubblePadX, lineCenterY, effectiveFontSize, prof.textColor, 1.0);
-                lineCenterY += effectiveFontSize + b.lineSpacing;
+                lineCenterY += chatLineStep;
               });
 
               if (b.transLines && b.transLines.length > 0) {
-                let transCenterY = lineCenterY - effectiveFontSize - b.lineSpacing + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
+                const transLineStep = b.transFs + b.transLineSpacing;
+                let transCenterY = (lineCenterY - chatLineStep) + (effectiveFontSize / 2) + b.transGap + (b.transFs / 2);
                 b.transLines.forEach(tl => {
                   drawFormattedRuns(tl.runs, bx + b.bubblePadX, transCenterY, b.transFs, prof.textColor, 0.65);
-                  transCenterY += b.transFs + b.transLineSpacing;
+                  transCenterY += transLineStep;
                 });
               }
 
@@ -3755,12 +3923,20 @@
               let lineY = startCenterY;
               runsList.forEach(line => {
                 let curX = startX;
-                line.runs.forEach(run => {
+                line.runs.forEach((run, rIdx) => {
                   ctx.font = run.fontStr;
 
                   if (run.mark) {
+                    const prevRun = line.runs[rIdx - 1];
+                    const nextRun = line.runs[rIdx + 1];
+                    const isPrevConnected = prevRun && prevRun.mark && (prevRun.markColor || '#ffeb3b').toLowerCase() === (run.markColor || '#ffeb3b').toLowerCase();
+                    const isNextConnected = nextRun && nextRun.mark && (nextRun.markColor || '#ffeb3b').toLowerCase() === (run.markColor || '#ffeb3b').toLowerCase();
+
+                    const markX = isPrevConnected ? curX : curX - 1;
+                    const markW = run.width + (isPrevConnected ? 0 : 1) + (isNextConnected ? 0 : 1);
+
                     ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48 * alpha);
-                    ctx.fillRect(curX - 1, lineY - (currentFs * 0.55), run.width + 2, currentFs * 1.15);
+                    ctx.fillRect(markX, lineY - (currentFs * 0.55), markW, currentFs * 1.15);
                   }
 
                   ctx.fillStyle = hexToRgba(run.textColor || textColor, alpha);
@@ -3825,10 +4001,9 @@
               // 원문 렌더링
               let nextLineY = drawRunList(b.lines, textLeft, curY + b.nameHeaderH + (effFontSize / 2), effFontSize, b.lineSpacing, b.prof.textColor, 1.0);
 
-              // 번역문 렌더링 (오퍼시티 0.68)
               if (b.transLines && b.transLines.length > 0) {
                 let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
-                drawRunList(b.transLines, textLeft, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.60);
+                drawRunList(b.transLines, textLeft, transCenterY, b.transFs, Math.round(b.transFs * 0.32), b.prof.textColor, 0.60);
               }
 
               curY += b.blockH + 28;
@@ -3884,13 +4059,11 @@
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
 
-              // 원문 렌더링
               let nextLineY = drawRunList(b.lines, bx + b.bubblePadX, by + b.bubblePadY + (effFontSize / 2), effFontSize, b.lineSpacing, b.prof.textColor, 1.0);
 
-              // 번역문 렌더링 (폰트 82%, 오퍼시티 0.68)
               if (b.transLines && b.transLines.length > 0) {
                 let transCenterY = nextLineY - effFontSize - b.lineSpacing + (effFontSize / 2) + b.transGap + (b.transFs / 2);
-                drawRunList(b.transLines, bx + b.bubblePadX, transCenterY, b.transFs, b.transFs * (state.lineHeightMult - 1), b.prof.textColor, 0.60);
+                drawRunList(b.transLines, bx + b.bubblePadX, transCenterY, b.transFs, Math.round(b.transFs * 0.32), b.prof.textColor, 0.60);
               }
 
               curY += b.blockH + 10;
@@ -4494,13 +4667,38 @@
       render();
     });
 
-    // 비율 변경
-    document.getElementById('ratio-group').addEventListener('click', (e) => {
-      if (e.target.tagName !== 'BUTTON') return;
-      document.querySelectorAll('#ratio-group button').forEach(b => b.classList.remove('on'));
-      e.target.classList.add('on');
-      state.ratio = e.target.dataset.ratio;
+    // ================= 비율 변경 및 더보기 =================
+    
+    const btnRatioExpand = document.getElementById('btn-ratio-expand');
+
+    // ▼ / ▲ 아코디언 토글 이벤트
+    btnRatioExpand.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ratioAccordionWrap.classList.toggle('open');
+    });
+
+    // 비율 버튼 선택 처리 함수
+    function selectRatio(targetBtn) {
+      if (!targetBtn || targetBtn.id === 'btn-ratio-expand') return;
+
+      // 전체 버튼 활성화 상태 갱신
+      document.querySelectorAll('#ratio-group button:not(#btn-ratio-expand), #ratio-extra-group button').forEach(b => {
+        b.classList.remove('on');
+      });
+      targetBtn.classList.add('on');
+      state.ratio = targetBtn.dataset.ratio;
       render();
+    }
+
+    // 1행 및 2행 클릭 이벤트 연동
+    document.getElementById('ratio-group').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn) selectRatio(btn);
+    });
+
+    document.getElementById('ratio-extra-group').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn) selectRatio(btn);
     });
 
     // 폰트
@@ -5058,7 +5256,18 @@
         });
       };
       syncGroup('font-group', 'font', state.font);
-      syncGroup('ratio-group', 'ratio', state.ratio);
+      
+      // 기존 syncGroup('ratio-group', 'ratio', state.ratio); 대신:
+      document.querySelectorAll('#ratio-group button:not(#btn-ratio-expand), #ratio-extra-group button').forEach(b => {
+        b.classList.toggle('on', b.dataset.ratio === state.ratio);
+      });
+      // 만약 선택된 비율이 서브 메뉴에 속해 있다면 자동으로 서브 메뉴를 펼쳐두깅
+      if (['3:1', '9:16', '3:4'].includes(state.ratio)) {
+        ratioAccordionWrap.classList.add('open');
+      } else {
+        ratioAccordionWrap.classList.remove('open');
+      }
+      
       syncGroup('credplace-group', 'place', state.credPlace);
       syncGroup('frame-group', 'frame', state.frameStyle);
       syncGroup('insert-pos-group', 'pos', state.insertPos);
