@@ -175,6 +175,7 @@
       justify-content: space-between;
     }
     .label-sub {
+      opacity: 0.75;
       font-size: 11.5px;
       font-weight: 700;
       color: var(--text-sub);
@@ -242,7 +243,7 @@
 
     .fmt-badge-btn {
       background: #e2eef7 !important;
-      color: #3b7b9f !important;
+      color: #476579 !important;
       padding: 4px 8px;
       font-size: 11px;
       border-radius: 6px;
@@ -1830,6 +1831,634 @@
         box-shadow: 0 4px 14px rgba(61, 152, 207, 0.35) !important;
       }
     }
+
+    /* ═══════════════════════════════════════════════
+       SYRINGE · MED-KIT 에디터 스킨 v3
+       mono white × black · point blue · glass
+       (에디터 겉모습만 바꿔요 — 카드에 그려지는 색은 그대로)
+    ═══════════════════════════════════════════════ */
+    :root {
+      --rx-p: #2FA4DE;
+      --rx-p2: #1C86C2;
+      --rx-pl: #8FDCFB;
+      --rx-k: #0E0F12;
+      --rx-sub: #6A7079;
+      --rx-g1: #F3F4F6;
+      --rx-g2: #E4E6EA;
+      --rx-g3: #C8CCD3;
+      --rx-g4: #8B919A;
+      --rx-ring: inset 0 0 0 1px rgba(14, 15, 18, 0.08);
+      --rx-ease: cubic-bezier(.22, .8, .3, 1);
+      --border-focus: #2FA4DE;
+      --accent: #2FA4DE;
+      --accent-hover: #1C86C2;
+    }
+    body { letter-spacing: -0.03em; color: var(--rx-k); }
+
+    /* ── 에디터 바탕 ── */
+    .editor {
+      background-color: #EEEFF2 !important;
+      background-image:
+        radial-gradient(70% 30% at 0% 0%, rgba(47, 164, 222, 0.16), transparent 70%),
+        radial-gradient(60% 26% at 100% 60%, rgba(47, 164, 222, 0.1), transparent 70%),
+        radial-gradient(circle, rgba(14, 15, 18, 0.09) 1px, transparent 1.4px) !important;
+      background-size: auto, auto, 18px 18px !important;
+      border-right: 1px solid rgba(14, 15, 18, 0.08) !important;
+      box-shadow: 8px 0 40px -24px rgba(14, 15, 18, 0.3) !important;
+      gap: 14px;
+      padding: 16px 16px 60px !important;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(14, 15, 18, 0.16) transparent;
+    }
+    .editor::-webkit-scrollbar { width: 10px; }
+    .editor::-webkit-scrollbar-thumb {
+      background: rgba(14, 15, 18, 0.16);
+      border: 3px solid transparent;
+      border-radius: 9px;
+      background-clip: padding-box;
+    }
+    .editor::-webkit-scrollbar-thumb:hover { background: rgba(14, 15, 18, 0.3); background-clip: padding-box; }
+
+    /* 맨 위 유리 바 */
+    .editor::before {
+      content: "EDITOR  ·  Chat2Img";
+      flex-shrink: 0;
+      height: 36px;
+      padding: 0 16px 0 32px;
+      border-radius: 999px;
+      white-space: pre;
+      font: 700 10.5px/36px 'Pretendard', sans-serif;
+      letter-spacing: -0.01em;
+      color: var(--rx-sub);
+      background:
+        radial-gradient(circle, #2FA4DE 0 3.2px, transparent 3.7px) 14px 50%/8px 8px no-repeat,
+        rgba(255, 255, 255, 0.6);
+      -webkit-backdrop-filter: blur(18px) saturate(1.5);
+      backdrop-filter: blur(18px) saturate(1.5);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 10px 26px -18px rgba(14, 15, 18, 0.35);
+    }
+    
+    /* 맨 위 바 오른쪽 칩 */
+    .editor { position: relative; }
+    .editor::after {
+      content: "v3.1";
+      position: absolute;
+      top: 21px;
+      right: 21px;
+      height: 26px;
+      padding: 0 11px;               /* ← 점 자리 빼서 좌우 같게 */
+      border-radius: 999px;
+      font: 800 10px/26px 'Pretendard', sans-serif;
+      letter-spacing: -0.01em;
+      color: #fff;
+      background: #0E0F12;           /* ← 파란 점 그라데이션 삭제 */
+      pointer-events: none;
+    }
+
+    /* ── 제목 ── */
+    .editor-title {
+      flex-wrap: wrap;
+      font-size: 22px !important;
+      font-weight: 900 !important;
+      letter-spacing: -0.06em !important;
+      color: var(--rx-k) !important;
+      border-bottom: none !important;
+      padding: 0 4px !important;
+      gap: 6px !important;
+      row-gap: 0 !important;
+    }
+    .editor-title > span > span {
+      background: var(--rx-k) !important;
+      color: #fff;
+      padding: 0 6px 1px;
+      border-radius: 4px;
+      margin: 0 1px;
+    }
+    .editor-title::after {
+      content: "";
+      flex-basis: 100%;
+      margin-top: 2px;
+      padding-bottom: 12px;
+      font: 700 9.5px/1 'Pretendard', sans-serif;
+      letter-spacing: -0.01em;
+      color: var(--rx-g4);
+      background:
+        repeating-linear-gradient(90deg, rgba(14, 15, 18, .2) 0 1px, transparent 1px 8px) 0 100%/100% 4px no-repeat,
+        repeating-linear-gradient(90deg, rgba(14, 15, 18, .42) 0 1px, transparent 1px 40px) 0 100%/100% 8px no-repeat;
+    }
+    .syringe-logo-svg {
+      width: 54px !important;
+      height: 54px !important;
+      margin: 2px 0 0 -6px !important;
+      overflow: visible;
+      filter: drop-shadow(0 4px 8px rgba(47, 164, 222, 0.4)) !important;
+    }
+
+    /* ── 모드 탭 ── */
+    .mode-tab-bar {
+      background: rgba(255, 255, 255, 0.55) !important;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      padding: 4px !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), var(--rx-ring);
+      gap: 4px !important;
+    }
+    .mode-tab-btn {
+      border-radius: 999px !important;
+      color: var(--rx-sub) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.03em;
+    }
+    .mode-tab-btn:hover { color: var(--rx-k) !important; }
+    .mode-tab-btn.on {
+      background: var(--rx-k) !important;
+      color: #fff !important;
+      box-shadow: 0 8px 16px -10px rgba(14, 15, 18, 0.7) !important;
+    }
+
+    /* ── 패널 카드 = 유리 진료 차트 ── */
+    .panel-card {
+      position: relative;
+      gap: 12px !important;
+      padding: 16px 16px 17px !important;
+      background: rgba(255, 255, 255, 0.55) !important;
+      border: 0 !important;
+      border-radius: 22px !important;
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      backdrop-filter: blur(20px) saturate(1.5) !important;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.95),
+        inset 0 1px 0 #fff,
+        0 22px 44px -32px rgba(14, 15, 18, 0.4) !important;
+    }
+    .panel-card-title {
+      display: block !important;
+      font-size: 13.5px !important;
+      font-weight: 900 !important;
+      letter-spacing: -0.05em !important;
+      color: var(--rx-k) !important;
+      padding-bottom: 10px;
+      margin-bottom: 0 !important;
+      border-bottom: 1px dashed rgba(14, 15, 18, 0.12);
+    }
+    .panel-card-title::first-letter { color: var(--rx-p); }
+    /* 패널 번호 (연한 글자만, 칩 없이) */
+    .editor { counter-reset: rxsec; }
+    .panel-card-title { counter-increment: rxsec; }
+    .panel-card-title::after {
+      content: "№ " counter(rxsec, decimal-leading-zero);
+      float: right;
+      margin-top: 2px;
+      font: 800 10px/1 'Pretendard', sans-serif;
+      letter-spacing: 0;
+      color: #8B919A;
+      opacity: 0.8;
+    }
+    .panel-divider {
+      height: 0 !important;
+      background: none !important;
+      border-top: 1px dashed rgba(14, 15, 18, 0.1);
+    }
+    .label-sub {
+      color: var(--rx-k) !important;
+      font-weight: 800 !important;
+      font-size: 11.5px !important;
+      letter-spacing: -0.03em !important;
+    }
+    .btn-clear-text {
+      background: rgba(255, 255, 255, 0.8) !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: var(--rx-ring);
+      color: var(--rx-sub) !important;
+      padding: 4px 10px !important;
+    }
+    .btn-clear-text:hover {
+      background: var(--rx-p) !important;
+      color: #fff !important;
+    }
+
+    /* ── 서식 툴바 = 밝은 유리 ── */
+    .fmt-toolbar-standalone {
+      background:
+        linear-gradient(118deg, rgba(255, 255, 255, 0.6) 0 30%, transparent 30%),
+        linear-gradient(180deg, #f7f9fb, #eef1f4) !important;
+      border: 0 !important;
+      border-radius: 14px 14px 0 0 !important;
+      padding: 7px 10px !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(14, 15, 18, 0.06), 0 0 0 1px rgba(14, 15, 18, 0.06);
+    }
+    .fmt-btn { color: #4b5563 !important; }
+    .fmt-btn:hover { background: #fff !important; color: var(--rx-p) !important; }
+    .fmt-badge-btn {
+      background: #fff !important;
+      color: 476579 !important;
+      border-radius: 999px !important;
+      box-shadow: var(--rx-ring) !important;
+    }
+    .fmt-badge-btn:hover { background: var(--rx-p) !important; color: #fff !important; }
+    .fmt-btn-hl { border-radius: 7px !important; }
+
+    /* ── 입력칸 ── */
+    textarea, input[type="text"] {
+      border: 0 !important;
+      background: #fff !important;
+      border-radius: 12px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+      color: var(--rx-k) !important;
+      letter-spacing: -0.02em;
+    }
+    textarea {
+      border-radius: 0 0 14px 14px !important;
+      box-shadow: 0 0 0 1px rgba(14, 15, 18, 0.06), 0 14px 26px -22px rgba(14, 15, 18, 0.45);
+    }
+    textarea:focus, input[type="text"]:focus {
+      box-shadow: inset 0 0 0 1.5px #2FA4DE, 0 0 0 3px rgba(47, 164, 222, 0.16) !important;
+    }
+    textarea::placeholder, input[type="text"]::placeholder { color: var(--rx-g4) !important; }
+
+    /* ── 안내 팁 ── */
+    .chat-guide-tip {
+      background: rgba(255, 255, 255, 0.72) !important;
+      border-radius: 12px !important;
+      box-shadow: inset 3px 0 0 #beccd2, var(--rx-ring);
+      color: var(--rx-sub) !important;
+      padding: 9px 12px 9px 14px !important;
+    }
+    .chat-guide-tip b { color: var(--rx-k) !important; font-weight: 600 !important; }
+
+    /* ── 토글 ── */
+    .sw-track {
+      background: var(--rx-g2) !important;
+      box-shadow: inset 0 1px 2px rgba(14, 15, 18, 0.12);
+    }
+    .toggle-row.on .sw-track { background: var(--rx-p) !important; }
+    .toggle-label { font-weight: 800 !important; letter-spacing: -0.03em; }
+
+    /* ── 세그먼트 버튼 ── */
+    .seg-buttons {
+      background: rgba(255, 255, 255, 0.5) !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: var(--rx-ring);
+      gap: 3px !important;
+    }
+    .seg-buttons button {
+      border-radius: 999px !important;
+      color: var(--rx-sub) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.03em;
+    }
+    .seg-buttons button:hover { color: var(--rx-k) !important; }
+    .seg-buttons button.on {
+      background: var(--rx-k) !important;
+      color: #fff !important;
+      font-weight: 800 !important;
+      box-shadow: 0 6px 12px -8px rgba(14, 15, 18, 0.7) !important;
+    }
+    .btn-extra-ratio.on .ratio-sub { color: var(--rx-pl) !important; }
+    #st-layer-group button { font-size: 11.5px; }
+
+    /* 비율 아코디언 */
+    .ratio-accordion-wrap {
+      background: rgba(255, 255, 255, 0.5) !important;
+      border: 0 !important;
+      border-radius: 20px !important;
+      box-shadow: var(--rx-ring);
+    }
+    .ratio-accordion-wrap .seg-buttons { box-shadow: none; }
+    .ratio-accordion-wrap.open .ratio-extra-inner { border-top: 1px dashed rgba(14, 15, 18, 0.12) !important; }
+    .ratio-sub-row { background: transparent !important; }
+    #btn-ratio-expand { color: var(--rx-sub) !important; }
+    #btn-ratio-expand:hover, .ratio-accordion-wrap.open .expand-arrow { color: var(--rx-p) !important; }
+
+    .ratio-auto-btn {
+      background: rgba(255, 255, 255, 0.5) !important;
+      border: 0 !important;
+      border-radius: 14px !important;
+      box-shadow: var(--rx-ring);
+      color: var(--rx-sub) !important;
+    }
+    .ratio-auto-btn:hover { color: var(--rx-k) !important; }
+    .ratio-auto-btn.on {
+      background: #fff !important;
+      color: var(--rx-p) !important;
+      box-shadow: 0 0 0 1.5px rgba(47, 164, 222, 0.5), 0 8px 18px -12px rgba(47, 164, 222, 0.6) !important;
+    }
+    .ratio-auto-btn.on .ratio-auto-icon { background: var(--rx-p) !important; }
+
+    /* ── 슬라이더 (하트 그대로, 트랙만 얇게) ── */
+    .range-row input[type="range"]::-webkit-slider-runnable-track { height: 5px; }
+    .range-row input[type="range"]::-webkit-slider-thumb { margin-top: -8.5px; }
+    .range-row span {
+      color: var(--rx-k) !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.02em;
+      opacity: 0.75;
+    }
+
+    /* ── 색 고르기 / 스와치 ── */
+    .swatch-btn {
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12);
+      font-weight: 800 !important;
+    }
+    .swatch-btn.on { box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12), 0 0 0 2px #fff, 0 0 0 3.5px #2FA4DE !important; }
+    .color-picker-wrap {
+      border: 0 !important;
+      border-radius: 999px !important;
+      background: #fff !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+      padding: 4px 10px 4px 12px !important;
+    }
+    .color-picker-wrap:focus-within { box-shadow: inset 0 0 0 1.5px #2FA4DE, 0 0 0 3px rgba(47, 164, 222, 0.16) !important; }
+    .picker-label-text { color: var(--rx-sub) !important; font-weight: 800 !important; }
+    .color-code-input { box-shadow: none !important; border-radius: 6px !important; color: var(--rx-k) !important; }
+    .color-code-input:focus { background: var(--rx-g1) !important; box-shadow: none !important; }
+    .btn-mini {
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+      color: var(--rx-k) !important;
+    }
+    .btn-mini:hover { background: var(--rx-p) !important; color: #fff !important; }
+    .profile-color-pair {
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+      color: var(--rx-k) !important;
+      font-weight: 800 !important;
+      padding: 5px 10px !important;
+    }
+    .profile-color-pair input[type="color"] { -webkit-appearance: none; appearance: none; padding: 0; border: 0 !important; background: none; box-shadow: 0 0 0 1px rgba(14, 15, 18, 0.15); }
+    .profile-color-pair input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    .profile-color-pair input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+    #cur-profile-code { background: var(--rx-k) !important; border-radius: 999px !important; }
+
+    /* ── 파일 넣는 칸 ── */
+    .file-dropzone {
+      border: 1px solid rgba(14, 15, 18, 0.22) !important;
+      background: rgba(255, 255, 255, 0.6) !important;
+      border-radius: 14px !important;
+      color: rgba(14, 15, 18, 0.75) !important;
+      font-weight: 600 !important;
+      letter-spacing: -0.03em;
+    }
+    .file-dropzone:hover {
+      border-color: #2FA4DE !important;
+      border-style: solid !important;
+      background: rgba(47, 164, 222, 0.07) !important;
+      color: var(--rx-p2) !important;
+    }
+    #insert-controls, #sticker-controls {
+      background: rgba(255, 255, 255, 0.5) !important;
+      border: 0 !important;
+      border-radius: 16px !important;
+      box-shadow: var(--rx-ring);
+    }
+
+    /* 썸네일 */
+    .thumb-item {
+      border: 0 !important;
+      border-radius: 12px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12);
+    }
+    .thumb-item:hover { box-shadow: inset 0 0 0 1.5px #2FA4DE; }
+    .thumb-item.on { box-shadow: inset 0 0 0 2px #2FA4DE, 0 0 0 3px rgba(47, 164, 222, 0.18) !important; }
+    .thumb-badge { background: var(--rx-k) !important; color: #fff !important; border-radius: 999px !important; padding: 1px 5px !important; }
+    .thumb-del:hover { background: var(--rx-p) !important; }
+
+    /* ── 저장 · 복사 버튼 ── */
+    .copy-btn {
+      margin-top: 4px !important;
+      background: rgba(255, 255, 255, 0.65) !important;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      color: var(--rx-k) !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 1px rgba(14, 15, 18, 0.08), 0 12px 24px -18px rgba(14, 15, 18, 0.45);
+      letter-spacing: -0.03em !important;
+    }
+    .copy-btn:hover { background: #fff !important; color: var(--rx-p) !important; }
+    .save-btn {
+      margin-top: 4px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--rx-k) !important;
+      border-radius: 999px !important;
+      letter-spacing: -0.03em !important;
+      box-shadow: 0 14px 26px -14px rgba(14, 15, 18, 0.7) !important;
+    }
+    .save-btn::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2FA4DE;
+      box-shadow: 0 0 8px #2FA4DE;
+      animation: rxEdBlink 2.4s ease-in-out infinite;
+    }
+    .save-btn:hover {
+      background: var(--rx-p) !important;
+      box-shadow: 0 14px 26px -12px rgba(47, 164, 222, 0.9) !important;
+    }
+    .save-btn:hover::before { background: #fff; box-shadow: 0 0 8px #fff; }
+    @keyframes rxEdBlink { 50% { opacity: 0.2; } }
+
+    /* ── 미리보기 무대 (무채색 하프톤 + 하늘빛) ── */
+    .stage-wrap {
+      background-color: #EEEFF2;
+      background-image:
+        radial-gradient(38% 34% at 22% 14%, rgba(47, 164, 222, 0.2), transparent 70%),
+        radial-gradient(32% 30% at 86% 74%, rgba(47, 164, 222, 0.14), transparent 70%),
+        radial-gradient(30% 26% at 40% 92%, rgba(14, 15, 18, 0.05), transparent 70%),
+        radial-gradient(circle, rgba(14, 15, 18, 0.1) 1px, transparent 1.4px);
+      background-size: auto, auto, auto, 22px 22px;
+    }
+    .stage-wrap::before,
+    .stage-wrap::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+    }
+    /* 네 귀퉁이 십자 표시 */
+    .stage-wrap::before {
+      inset: 14px;
+      opacity: 0.3;
+      background:
+        linear-gradient(#0E0F12, #0E0F12) 0 8px/16px 1px no-repeat, linear-gradient(#0E0F12, #0E0F12) 8px 0/1px 16px no-repeat,
+        linear-gradient(#0E0F12, #0E0F12) 100% 8px/16px 1px no-repeat, linear-gradient(#0E0F12, #0E0F12) calc(100% - 8px) 0/1px 16px no-repeat,
+        linear-gradient(#0E0F12, #0E0F12) 0 calc(100% - 8px)/16px 1px no-repeat, linear-gradient(#0E0F12, #0E0F12) 8px 100%/1px 16px no-repeat,
+        linear-gradient(#0E0F12, #0E0F12) 100% calc(100% - 8px)/16px 1px no-repeat, linear-gradient(#0E0F12, #0E0F12) calc(100% - 8px) 100%/1px 16px no-repeat;
+    }
+    /* 세로 글자 */
+    .stage-wrap::after {
+      content: "@zZnaptime ─ Chat2Img EDITOR";
+      right: 18px;
+      bottom: 110px;
+      writing-mode: vertical-rl;
+      white-space: pre;
+      font: 700 9.5px/1 'Pretendard', sans-serif;
+      letter-spacing: -0.01em;
+      color: var(--rx-g4);
+    }
+    .stage {
+      background: transparent !important;
+      position: relative;
+      z-index: 1;
+    }
+    .stage.zoomed { scrollbar-color: rgba(14, 15, 18, 0.18) transparent; }
+    .stage.zoomed::-webkit-scrollbar-thumb { background: rgba(14, 15, 18, 0.18) !important; background-clip: padding-box !important; }
+
+    /* 보기 방식 바 */
+    .view-toolbar {
+      top: 18px !important;
+      right: 22px !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      background: rgba(255, 255, 255, 0.6) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(1.5);
+      backdrop-filter: blur(18px) saturate(1.5) !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 12px 28px -18px rgba(14, 15, 18, 0.4) !important;
+    }
+    .view-toolbar button { border-radius: 999px !important; color: var(--rx-sub) !important; font-weight: 800 !important; }
+    .view-toolbar button:hover { color: var(--rx-k) !important; background: rgba(14, 15, 18, 0.05) !important; }
+    .view-toolbar button.on { background: var(--rx-k) !important; color: #fff !important; }
+    .view-sep { background: rgba(14, 15, 18, 0.1) !important; }
+    .view-pct { color: var(--rx-k) !important; font-weight: 900 !important; }
+
+    /* ── 떠 있는 버튼들 ── */
+    .preset-fab-btn {
+      background: var(--rx-k) !important;
+      border: 0 !important;
+      padding: 11px 18px 11px 14px !important;
+      letter-spacing: -0.03em !important;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 14px 26px -12px rgba(14, 15, 18, 0.6) !important;
+    }
+    .preset-fab-btn::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2FA4DE;
+      box-shadow: 0 0 8px #2FA4DE;
+    }
+    .preset-fab-btn:hover { background: var(--rx-p) !important; }
+    .preset-fab-btn:hover::before { background: #fff; box-shadow: 0 0 8px #fff; }
+    @media (max-width: 768px) {
+      .fab-btn {
+        background: var(--rx-k) !important;
+        border: 0 !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 10px 20px -10px rgba(14, 15, 18, 0.6) !important;
+      }
+      .fab-btn:active { background: var(--rx-p) !important; }
+      .preset-fab-btn { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 10px 20px -10px rgba(14, 15, 18, 0.6) !important; }
+      .stage-wrap::after { display: none; }
+    }
+
+    /* ── 모달 공통 ── */
+    #restore-modal, #preset-modal { background: rgba(14, 15, 18, 0.35) !important; }
+    .restore-card, .preset-card-container {
+      background: linear-gradient(170deg, #ffffff 55%, #f2f9fe) !important;
+      border-radius: 26px !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 1px rgba(14, 15, 18, 0.08), 0 40px 80px -40px rgba(14, 15, 18, 0.55) !important;
+    }
+    .modal-syringe-wrap {
+      background: radial-gradient(circle at 40% 35%, #ffffff, #e6f3fb 70%) !important;
+      border: 0 !important;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 6px rgba(47, 164, 222, 0.1), 0 12px 26px -10px rgba(47, 164, 222, 0.4) !important;
+      overflow: visible;
+    }
+    .modal-syringe-svg { overflow: visible; }
+    #btn-restore-cancel {
+      background: #fff !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.14);
+      color: var(--rx-k) !important;
+    }
+    #btn-restore-confirm {
+      background: var(--rx-k) !important;
+      border-radius: 999px !important;
+      box-shadow: 0 10px 20px -12px rgba(14, 15, 18, 0.7) !important;
+    }
+    #btn-restore-confirm:hover { background: var(--rx-p) !important; }
+
+    /* 프리셋 보관함 */
+    .preset-title { font-weight: 900 !important; letter-spacing: -0.05em; color: var(--rx-k) !important; }
+    .preset-close-btn:hover { color: var(--rx-p) !important; }
+    .preset-save-bar input { border-radius: 999px !important; padding-left: 14px !important; }
+    .btn-preset-add {
+      background: var(--rx-k) !important;
+      border-radius: 999px !important;
+      padding: 0 16px !important;
+    }
+    .btn-preset-add:hover { background: var(--rx-p) !important; }
+    .btn-preset-import {
+      background: #fff !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12);
+      color: var(--rx-k) !important;
+    }
+    .btn-preset-import:hover { background: var(--rx-p) !important; color: #fff !important; }
+    .preset-nav-crumb:hover { background: rgba(47, 164, 222, 0.1) !important; color: var(--rx-p2) !important; }
+    .preset-nav-crumb.current { color: var(--rx-k) !important; font-weight: 900 !important; }
+    .preset-section-label { color: var(--rx-k) !important; font-weight: 900 !important; }
+    .preset-item-card {
+      border: 0 !important;
+      border-radius: 18px !important;
+      background: linear-gradient(160deg, #fff, #F3F4F6) !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.08) !important;
+    }
+    .preset-item-card:hover {
+      box-shadow: inset 0 0 0 1.5px rgba(47, 164, 222, 0.5), 0 10px 22px -12px rgba(47, 164, 222, 0.5) !important;
+    }
+    .preset-item-card.is-fav { box-shadow: inset 0 0 0 1.5px #2FA4DE !important; }
+    .preset-item-badge {
+      background: var(--rx-k) !important;
+      color: #fff !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+    }
+    .preset-item-name { font-weight: 900 !important; letter-spacing: -0.04em; color: var(--rx-k) !important; }
+    .btn-preset-action { border: 0 !important; box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12); }
+    .btn-preset-action:hover { background: var(--rx-p) !important; color: #fff !important; }
+    .btn-preset-action.fav.on { background: var(--rx-p) !important; color: #fff !important; box-shadow: none; }
+    .preset-folder-tile {
+      border: 0 !important;
+      border-radius: 16px !important;
+      background: rgba(47, 164, 222, 0.08) !important;
+      box-shadow: inset 0 0 0 1px rgba(47, 164, 222, 0.25);
+    }
+    .preset-folder-tile:hover { box-shadow: inset 0 0 0 1.5px rgba(47, 164, 222, 0.55), 0 10px 22px -12px rgba(47, 164, 222, 0.5) !important; }
+    .preset-folder-icon { color: var(--rx-p) !important; }
+    .preset-folder-name { color: var(--rx-k) !important; font-weight: 900 !important; }
+    .preset-file-footer { border-top: 1px dashed rgba(14, 15, 18, 0.12) !important; }
+    .btn-preset-footer-action {
+      background: #fff !important;
+      border: 0 !important;
+      border-radius: 999px !important;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12);
+      color: var(--rx-k) !important;
+      font-weight: 800 !important;
+    }
+    .btn-preset-footer-action:hover { background: var(--rx-p) !important; color: #fff !important; }
+    .preset-grid { scrollbar-width: thin; scrollbar-color: rgba(14, 15, 18, 0.16) transparent; }
+    .preset-grid::-webkit-scrollbar-thumb { background: rgba(14, 15, 18, 0.16) !important; }
+    .drop-before { box-shadow: -4px 0 0 0 #2FA4DE !important; }
+    .drop-after { box-shadow: 4px 0 0 0 #2FA4DE !important; }
+    .drop-into { background: rgba(47, 164, 222, 0.14) !important; border-color: #2FA4DE !important; color: var(--rx-p2) !important; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .save-btn::before { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -1838,56 +2467,112 @@
     <h1 class="editor-title">
       <svg class="syringe-logo-svg" viewBox="0 0 120 460" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id="syringeHalftone" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-            <circle cx="3" cy="3" r="1.4" fill="#ffffff" opacity="0.65"></circle>
-          </pattern>
-          <linearGradient id="softSyringeFluid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#dbeafe"></stop>
-            <stop offset="50%" stop-color="#85c8f2"></stop>
-            <stop offset="100%" stop-color="#51aae1"></stop>
+          <linearGradient id="logoGlass" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"></stop>
+            <stop offset="45%" stop-color="#eaf6fd" stop-opacity="0.7"></stop>
+            <stop offset="100%" stop-color="#cfe9f9" stop-opacity="0.85"></stop>
           </linearGradient>
-          <clipPath id="barrelClip">
-            <rect x="38.5" y="85" width="43" height="175"></rect>
+          <linearGradient id="logoFluid" x1="0" y1="110" x2="0" y2="255" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a9dcf8"></stop>
+            <stop offset="55%" stop-color="#6cc0ee"></stop>
+            <stop offset="100%" stop-color="#2FA4DE"></stop>
+          </linearGradient>
+          <linearGradient id="logoNeedle" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ffffff"></stop>
+            <stop offset="50%" stop-color="#9fb4c3"></stop>
+            <stop offset="100%" stop-color="#5f7a8d"></stop>
+          </linearGradient>
+          <pattern id="logoHalftone" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.3" fill="#ffffff" opacity="0.55"></circle>
+          </pattern>
+          <clipPath id="logoClip">
+            <rect x="38.5" y="87" width="43" height="166" rx="4"></rect>
           </clipPath>
         </defs>
 
-        <!-- 주사기 바늘 & 마운트 -->
-        <path d="M60 0 V60" stroke="#328ec7" stroke-width="4.5" stroke-linecap="round"></path>
-        <rect x="47" y="60" width="26" height="15" rx="3" fill="#ffffff" stroke="#328ec7" stroke-width="3"></rect>
-        <line x1="47" y1="68" x2="73" y2="68" stroke="#85c8f2" stroke-width="3"></line>
-        <rect x="34" y="75" width="52" height="10" rx="3" fill="#85c8f2" stroke="#328ec7" stroke-width="3"></rect>
+        <!-- 바늘 (끝에 반짝임) -->
+        <rect x="57.8" y="4" width="4.4" height="58" rx="2.2" fill="url(#logoNeedle)"></rect>
+        <path d="M57.8 8 L60 -2 L62.2 8 Z" fill="#9fb4c3"></path>
+        <circle cx="60" cy="-1" r="3.2" fill="#ffffff">
+          <animate attributeName="r" values="1.5;4.2;1.5" dur="2.60s" repeatCount="indefinite"></animate>
+          <animate attributeName="opacity" values="0.2;1;0.2" dur="2.60s" repeatCount="indefinite"></animate>
+        </circle>
 
-        <!-- 주사기 몸체 -->
-        <rect x="36" y="85" width="48" height="265" rx="6" fill="#ffffff" stroke="#328ec7" stroke-width="3.2"></rect>
-        <rect x="38.5" y="85" width="43" height="175" fill="url(#softSyringeFluid)"></rect>
-        <rect x="38.5" y="85" width="43" height="175" fill="url(#syringeHalftone)"></rect>
+        <!-- 허브 -->
+        <rect x="47" y="58" width="26" height="18" rx="5" fill="url(#logoGlass)" stroke="#51aae1" stroke-width="2.6"></rect>
+        <rect x="51" y="62" width="4" height="10" rx="2" fill="#ffffff" opacity="0.9"></rect>
+        <rect x="32" y="74" width="56" height="12" rx="6" fill="#85c8f2" stroke="#3d98cf" stroke-width="2.6"></rect>
+        <rect x="38" y="76.5" width="22" height="3" rx="1.5" fill="#ffffff" opacity="0.7"></rect>
 
-        <!-- 뽀글뽀글 기포 애니메이션 -->
-        <g clip-path="url(#barrelClip)">
-          <circle cx="50" cy="245" r="4.5" fill="#ffffff">
-            <animate attributeName="cy" from="245" to="90" dur="1.9s" repeatCount="indefinite"></animate>
-            <animate attributeName="cx" values="50;46;53;50" dur="1.9s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="1.9s" repeatCount="indefinite"></animate>
+        <!-- 유리 실린더 -->
+        <rect x="36" y="85" width="48" height="267" rx="9" fill="url(#logoGlass)" stroke="#51aae1" stroke-width="3"></rect>
+
+        <!-- 출렁이는 약액 -->
+        <g clip-path="url(#logoClip)">
+          <g>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 V262 H-4.5 Z" fill="url(#logoFluid)"></path>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 V262 H-4.5 Z" fill="url(#logoHalftone)"></path>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0" stroke="#ffffff" stroke-width="2.4" stroke-opacity="0.85"></path>
+            <animateTransform attributeName="transform" type="translate" values="0 0; -21.5 2.5; -43 0" dur="3.20s" repeatCount="indefinite"></animateTransform>
+          </g>
+
+          <!-- 뽀글뽀글 기포 -->
+          <circle cx="50" cy="245" r="4.2" fill="#ffffff">
+            <animate attributeName="cy" from="245" to="118" dur="2.40s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="50;46;53;50" dur="2.40s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.40s" repeatCount="indefinite"></animate>
           </circle>
-          <circle cx="67" cy="245" r="5.8" fill="#ffffff">
-            <animate attributeName="cy" from="245" to="90" dur="2.5s" begin="0.4s" repeatCount="indefinite"></animate>
-            <animate attributeName="cx" values="67;71;63;67" dur="2.5s" begin="0.5s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.5s" begin="0.5s" repeatCount="indefinite"></animate>
+          <circle cx="67" cy="245" r="5.4" fill="#ffffff">
+            <animate attributeName="cy" from="245" to="118" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="67;71;63;67" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
           </circle>
-          <circle cx="58" cy="245" r="3.2" fill="#eff6ff">
-            <animate attributeName="cy" from="245" to="90" dur="1.6s" begin="0.2s" repeatCount="indefinite"></animate>
-            <animate attributeName="cx" values="58;55;60;58" dur="1.6s" begin="0.2s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="1.6s" begin="0.2s" repeatCount="indefinite"></animate>
+          <circle cx="58" cy="245" r="3" fill="#eff6ff">
+            <animate attributeName="cy" from="245" to="118" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="58;55;60;58" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
           </circle>
         </g>
 
-        <!-- 피스톤 고무 & 손잡이 -->
-        <rect x="38.5" y="252" width="43" height="10" fill="#1b4b6b"></rect>
-        <line x1="38.5" y1="252" x2="81.5" y2="252" stroke="#dbeafe" stroke-width="2.5"></line>
-        <rect x="42" y="262" width="36" height="6" fill="#328ec7"></rect>
-        <rect x="54" y="268" width="12" height="120" fill="#f8fafc" stroke="#328ec7" stroke-width="3"></rect>
-        <rect x="32" y="388" width="56" height="12" rx="4" fill="#ffffff" stroke="#328ec7" stroke-width="3"></rect>
-        <rect x="37" y="391" width="46" height="6" rx="2" fill="#85c8f2"></rect>
+        <!-- 눈금 -->
+        <g stroke="#3d98cf" stroke-linecap="round" opacity="0.75">
+          <line x1="70" y1="110" x2="80" y2="110" stroke-width="2.4"></line>
+          <line x1="74" y1="128" x2="80" y2="128" stroke-width="1.8"></line>
+          <line x1="70" y1="146" x2="80" y2="146" stroke-width="2.4"></line>
+          <line x1="74" y1="164" x2="80" y2="164" stroke-width="1.8"></line>
+          <line x1="70" y1="182" x2="80" y2="182" stroke-width="2.4"></line>
+          <line x1="74" y1="200" x2="80" y2="200" stroke-width="1.8"></line>
+          <line x1="70" y1="218" x2="80" y2="218" stroke-width="2.4"></line>
+          <line x1="74" y1="236" x2="80" y2="236" stroke-width="1.8"></line>
+        </g>
+
+        <!-- 유리 하이라이트 -->
+        <rect x="41.5" y="94" width="5" height="244" rx="2.5" fill="#ffffff" opacity="0.85"></rect>
+        <rect x="49" y="96" width="2" height="90" rx="1" fill="#ffffff" opacity="0.6"></rect>
+
+        <!-- 고무 마개 -->
+        <rect x="38.5" y="252" width="43" height="12" rx="3" fill="#2a6f99"></rect>
+        <rect x="38.5" y="255" width="43" height="2" fill="#ffffff" opacity="0.25"></rect>
+        <rect x="38.5" y="260" width="43" height="2" fill="#ffffff" opacity="0.25"></rect>
+
+        <!-- 손잡이 날개 -->
+        <rect x="22" y="346" width="76" height="12" rx="6" fill="#ffffff" stroke="#51aae1" stroke-width="2.8"></rect>
+        <rect x="28" y="349" width="30" height="3" rx="1.5" fill="#85c8f2"></rect>
+
+        <!-- 밀대 + 엄지 받침 -->
+        <rect x="54" y="264" width="12" height="122" rx="3" fill="url(#logoGlass)" stroke="#51aae1" stroke-width="2.6"></rect>
+        <rect x="57" y="270" width="2.6" height="108" rx="1.3" fill="#ffffff" opacity="0.9"></rect>
+        <rect x="30" y="386" width="60" height="16" rx="8" fill="#ffffff" stroke="#51aae1" stroke-width="2.8"></rect>
+        <rect x="36" y="390" width="48" height="7" rx="3.5" fill="url(#logoFluid)"></rect>
+
+        <!-- 곁에서 반짝이는 ✦ -->
+        <path d="M100 118 C101.3 126 104 128.7 112 130 C104 131.3 101.3 134 100 142 C98.7 134 96 131.3 88 130 C96 128.7 98.7 126 100 118 Z" fill="#2FA4DE">
+          <animateTransform attributeName="transform" type="rotate" values="0 100 130; 45 100 130; 0 100 130" dur="3.00s" repeatCount="indefinite"></animateTransform>
+          <animate attributeName="opacity" values="0.25;1;0.25" dur="3.00s" repeatCount="indefinite"></animate>
+        </path>
+        <path d="M14 214 C14.8 219 16.6 220.8 21.6 221.6 C16.6 222.4 14.8 224.2 14 229.2 C13.2 224.2 11.4 222.4 6.4 221.6 C11.4 220.8 13.2 219 14 214 Z" fill="#85c8f2">
+          <animate attributeName="opacity" values="1;0.2;1" dur="2.40s" repeatCount="indefinite"></animate>
+        </path>
       </svg>
       <span>윳! <span style="background: rgba(81,170,225,0.5)">채팅</span> 발췌기</span>
     </h1>
@@ -2489,58 +3174,114 @@
     <div class="restore-card">
       <div class="modal-syringe-wrap">
         <svg class="modal-syringe-svg" viewBox="0 0 120 460" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="modalHalftone" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-              <circle cx="3" cy="3" r="1.4" fill="#ffffff" opacity="0.65"></circle>
-            </pattern>
-            <linearGradient id="modalSyringeFluid" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#dbeafe"></stop>
-              <stop offset="50%" stop-color="#85c8f2"></stop>
-              <stop offset="100%" stop-color="#51aae1"></stop>
-            </linearGradient>
-            <clipPath id="modalBarrelClip">
-              <rect x="38.5" y="85" width="43" height="175"></rect>
-            </clipPath>
-          </defs>
+        <defs>
+          <linearGradient id="modalGlass" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"></stop>
+            <stop offset="45%" stop-color="#eaf6fd" stop-opacity="0.7"></stop>
+            <stop offset="100%" stop-color="#cfe9f9" stop-opacity="0.85"></stop>
+          </linearGradient>
+          <linearGradient id="modalFluid" x1="0" y1="110" x2="0" y2="255" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a9dcf8"></stop>
+            <stop offset="55%" stop-color="#6cc0ee"></stop>
+            <stop offset="100%" stop-color="#2FA4DE"></stop>
+          </linearGradient>
+          <linearGradient id="modalNeedle" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ffffff"></stop>
+            <stop offset="50%" stop-color="#9fb4c3"></stop>
+            <stop offset="100%" stop-color="#5f7a8d"></stop>
+          </linearGradient>
+          <pattern id="modalHalftone" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="3" cy="3" r="1.3" fill="#ffffff" opacity="0.55"></circle>
+          </pattern>
+          <clipPath id="modalClip">
+            <rect x="38.5" y="87" width="43" height="166" rx="4"></rect>
+          </clipPath>
+        </defs>
 
-          <!-- 바늘 & 마운트 -->
-          <path d="M60 0 V60" stroke="#328ec7" stroke-width="4.5" stroke-linecap="round"></path>
-          <rect x="47" y="60" width="26" height="15" rx="3" fill="#ffffff" stroke="#328ec7" stroke-width="3"></rect>
-          <line x1="47" y1="68" x2="73" y2="68" stroke="#85c8f2" stroke-width="3"></line>
-          <rect x="34" y="75" width="52" height="10" rx="3" fill="#85c8f2" stroke="#328ec7" stroke-width="3"></rect>
+        <!-- 바늘 (끝에 반짝임) -->
+        <rect x="57.8" y="4" width="4.4" height="58" rx="2.2" fill="url(#modalNeedle)"></rect>
+        <path d="M57.8 8 L60 -2 L62.2 8 Z" fill="#9fb4c3"></path>
+        <circle cx="60" cy="-1" r="3.2" fill="#ffffff">
+          <animate attributeName="r" values="1.5;4.2;1.5" dur="2.60s" repeatCount="indefinite"></animate>
+          <animate attributeName="opacity" values="0.2;1;0.2" dur="2.60s" repeatCount="indefinite"></animate>
+        </circle>
 
-          <!-- 주사기 몸체 -->
-          <rect x="36" y="85" width="48" height="265" rx="6" fill="#ffffff" stroke="#328ec7" stroke-width="3.2"></rect>
-          <rect x="38.5" y="85" width="43" height="175" fill="url(#modalSyringeFluid)"></rect>
-          <rect x="38.5" y="85" width="43" height="175" fill="url(#modalHalftone)"></rect>
+        <!-- 허브 -->
+        <rect x="47" y="58" width="26" height="18" rx="5" fill="url(#modalGlass)" stroke="#51aae1" stroke-width="2.6"></rect>
+        <rect x="51" y="62" width="4" height="10" rx="2" fill="#ffffff" opacity="0.9"></rect>
+        <rect x="32" y="74" width="56" height="12" rx="6" fill="#85c8f2" stroke="#3d98cf" stroke-width="2.6"></rect>
+        <rect x="38" y="76.5" width="22" height="3" rx="1.5" fill="#ffffff" opacity="0.7"></rect>
 
-          <!-- 뽀글뽀글 기포 애니메이션 -->
-          <g clip-path="url(#modalBarrelClip)">
-            <circle cx="50" cy="245" r="4.5" fill="#ffffff">
-              <animate attributeName="cy" from="245" to="90" dur="1.8s" repeatCount="indefinite"></animate>
-              <animate attributeName="cx" values="50;46;53;50" dur="1.8s" repeatCount="indefinite"></animate>
-              <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="1.8s" repeatCount="indefinite"></animate>
-            </circle>
-            <circle cx="67" cy="245" r="5.8" fill="#ffffff">
-              <animate attributeName="cy" from="245" to="90" dur="2.4s" begin="0.4s" repeatCount="indefinite"></animate>
-              <animate attributeName="cx" values="67;71;63;67" dur="2.4s" begin="0.5s" repeatCount="indefinite"></animate>
-              <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.4s" begin="0.5s" repeatCount="indefinite"></animate>
-            </circle>
-            <circle cx="58" cy="245" r="3.2" fill="#eff6ff">
-              <animate attributeName="cy" from="245" to="90" dur="1.5s" begin="0.2s" repeatCount="indefinite"></animate>
-              <animate attributeName="cx" values="58;55;60;58" dur="1.5s" begin="0.2s" repeatCount="indefinite"></animate>
-              <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="1.5s" begin="0.2s" repeatCount="indefinite"></animate>
-            </circle>
+        <!-- 유리 실린더 -->
+        <rect x="36" y="85" width="48" height="267" rx="9" fill="url(#modalGlass)" stroke="#51aae1" stroke-width="3"></rect>
+
+        <!-- 출렁이는 약액 -->
+        <g clip-path="url(#modalClip)">
+          <g>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 V262 H-4.5 Z" fill="url(#modalFluid)"></path>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 V262 H-4.5 Z" fill="url(#modalHalftone)"></path>
+            <path d="M-4.5 120 q10.75 -7 21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0 t21.5 0" stroke="#ffffff" stroke-width="2.4" stroke-opacity="0.85"></path>
+            <animateTransform attributeName="transform" type="translate" values="0 0; -21.5 2.5; -43 0" dur="3.20s" repeatCount="indefinite"></animateTransform>
           </g>
 
-          <!-- 피스톤 고무 & 손잡이 -->
-          <rect x="38.5" y="252" width="43" height="10" fill="#1b4b6b"></rect>
-          <line x1="38.5" y1="252" x2="81.5" y2="252" stroke="#dbeafe" stroke-width="2.5"></line>
-          <rect x="42" y="262" width="36" height="6" fill="#328ec7"></rect>
-          <rect x="54" y="268" width="12" height="120" fill="#f8fafc" stroke="#328ec7" stroke-width="3"></rect>
-          <rect x="32" y="388" width="56" height="12" rx="4" fill="#ffffff" stroke="#328ec7" stroke-width="3"></rect>
-          <rect x="37" y="391" width="46" height="6" rx="2" fill="#85c8f2"></rect>
-        </svg>
+          <!-- 뽀글뽀글 기포 -->
+          <circle cx="50" cy="245" r="4.2" fill="#ffffff">
+            <animate attributeName="cy" from="245" to="118" dur="2.40s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="50;46;53;50" dur="2.40s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.40s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="67" cy="245" r="5.4" fill="#ffffff">
+            <animate attributeName="cy" from="245" to="118" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="67;71;63;67" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="3.00s" begin="0.5s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="58" cy="245" r="3" fill="#eff6ff">
+            <animate attributeName="cy" from="245" to="118" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
+            <animate attributeName="cx" values="58;55;60;58" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur="2.00s" begin="0.2s" repeatCount="indefinite"></animate>
+          </circle>
+        </g>
+
+        <!-- 눈금 -->
+        <g stroke="#3d98cf" stroke-linecap="round" opacity="0.75">
+          <line x1="70" y1="110" x2="80" y2="110" stroke-width="2.4"></line>
+          <line x1="74" y1="128" x2="80" y2="128" stroke-width="1.8"></line>
+          <line x1="70" y1="146" x2="80" y2="146" stroke-width="2.4"></line>
+          <line x1="74" y1="164" x2="80" y2="164" stroke-width="1.8"></line>
+          <line x1="70" y1="182" x2="80" y2="182" stroke-width="2.4"></line>
+          <line x1="74" y1="200" x2="80" y2="200" stroke-width="1.8"></line>
+          <line x1="70" y1="218" x2="80" y2="218" stroke-width="2.4"></line>
+          <line x1="74" y1="236" x2="80" y2="236" stroke-width="1.8"></line>
+        </g>
+
+        <!-- 유리 하이라이트 -->
+        <rect x="41.5" y="94" width="5" height="244" rx="2.5" fill="#ffffff" opacity="0.85"></rect>
+        <rect x="49" y="96" width="2" height="90" rx="1" fill="#ffffff" opacity="0.6"></rect>
+
+        <!-- 고무 마개 -->
+        <rect x="38.5" y="252" width="43" height="12" rx="3" fill="#2a6f99"></rect>
+        <rect x="38.5" y="255" width="43" height="2" fill="#ffffff" opacity="0.25"></rect>
+        <rect x="38.5" y="260" width="43" height="2" fill="#ffffff" opacity="0.25"></rect>
+
+        <!-- 손잡이 날개 -->
+        <rect x="22" y="346" width="76" height="12" rx="6" fill="#ffffff" stroke="#51aae1" stroke-width="2.8"></rect>
+        <rect x="28" y="349" width="30" height="3" rx="1.5" fill="#85c8f2"></rect>
+
+        <!-- 밀대 + 엄지 받침 -->
+        <rect x="54" y="264" width="12" height="122" rx="3" fill="url(#modalGlass)" stroke="#51aae1" stroke-width="2.6"></rect>
+        <rect x="57" y="270" width="2.6" height="108" rx="1.3" fill="#ffffff" opacity="0.9"></rect>
+        <rect x="30" y="386" width="60" height="16" rx="8" fill="#ffffff" stroke="#51aae1" stroke-width="2.8"></rect>
+        <rect x="36" y="390" width="48" height="7" rx="3.5" fill="url(#modalFluid)"></rect>
+
+        <!-- 곁에서 반짝이는 ✦ -->
+        <path d="M100 118 C101.3 126 104 128.7 112 130 C104 131.3 101.3 134 100 142 C98.7 134 96 131.3 88 130 C96 128.7 98.7 126 100 118 Z" fill="#2FA4DE">
+          <animateTransform attributeName="transform" type="rotate" values="0 100 130; 45 100 130; 0 100 130" dur="3.00s" repeatCount="indefinite"></animateTransform>
+          <animate attributeName="opacity" values="0.25;1;0.25" dur="3.00s" repeatCount="indefinite"></animate>
+        </path>
+        <path d="M14 214 C14.8 219 16.6 220.8 21.6 221.6 C16.6 222.4 14.8 224.2 14 229.2 C13.2 224.2 11.4 222.4 6.4 221.6 C11.4 220.8 13.2 219 14 214 Z" fill="#85c8f2">
+          <animate attributeName="opacity" values="1;0.2;1" dur="2.40s" repeatCount="indefinite"></animate>
+        </path>
+      </svg>
       </div>
       <div style="font-size:18px; font-weight:800; color:#1e293b; letter-spacing:-0.02em;">작업 복원 안내</div>
       <div style="font-size:13px; font-weight:500; color:#64748b; line-height:1.6; margin-top:10px;">이전에 편집하던 내용이 남아있습니다.<br>작업을 이어서 진행하시겠습니까?</div>
@@ -2553,7 +3294,7 @@
     
   <!-- 플로팅 프리셋 버튼 (PC 우하단 / 모바일 네비 상단) -->
   <button type="button" class="preset-fab-btn" id="btn-open-preset">
-    <span>♥ 프리셋 보관함</span>
+    <span>프리셋 보관함</span>
   </button>
 
   <!-- 프리셋 관리 모달 창 -->
