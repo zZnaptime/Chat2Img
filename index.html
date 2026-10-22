@@ -2005,7 +2005,7 @@
     /* 맨 위 바 오른쪽 칩 */
     .editor { position: relative; }
     .editor::after {
-      content: "v3.2";
+      content: "v3.1";
       position: absolute;
       top: 21px;
       right: 21px;
@@ -3208,11 +3208,13 @@
             <button type="button" class="btn-html-mini" id="btn-html-bg-clear">비우기</button>
           </div>
         </div>
-        <textarea id="in-bg-html" class="html-bg-input" spellcheck="false" placeholder="<style>&#10;  body { background: #51aae1; }&#10;</style>&#10;<div class=&quot;deco&quot;></div>"></textarea>
+        <textarea id="in-bg-html" class="html-bg-input" spellcheck="false" placeholder="<style>&#10;  body { background: #e6f4fd; }&#10;</style>&#10;<div class=&quot;deco&quot;></div>"></textarea>
         <span class="html-bg-status" id="html-bg-status"></span>
         <span style="font-size:11.5px; color:var(--text-sub); line-height:1.6;">
           *<b>&lt;style&gt; 태그 사용 가능</b>, 스크립트는 실행되지 않습니다.<br>
-          *외부 이미지/폰트는 불러올 수 있는 것만 들어갑니다.
+          *외부 이미지/폰트는 불러올 수 있는 것만 들어갑니다.<br>
+          *가려지면 안 되는 장식에 <b>data-layer=&quot;top&quot;</b>을 넣어주세요.<br>
+          *그래도 장식이 가려지면 <b>카드 전체 여백</b>을 늘려보세요.
         </span>
       </div>
 
@@ -6110,6 +6112,7 @@
 
       // 스티커 (맨 위에 얹기)
       if (!autoMeasuring) {
+        drawHtmlTopLayer();
         drawStickers();
         applyViewZoom();
         updateStickerOverlay();
@@ -7115,8 +7118,8 @@
 <div class="glow a"></div>
 <div class="glow b"></div>
 <div class="glass"></div>
-<div class="tag">${label}</div>
-<div class="line"></div>`;
+<div class="tag" data-layer="top">${label}</div>
+<div class="line" data-layer="top"></div>`;
       return `<style>
   :root {
     --point: ${point};
@@ -7189,8 +7192,8 @@
 <div class="glow a"></div>
 <div class="glow b"></div>
 <div class="glass"></div>
-<div class="tag">${label}</div>
-<div class="line"><span></span><span></span><span></span></div>`;
+<div class="tag" data-layer="top">${label}</div>
+<div class="line" data-layer="top"><span></span><span></span><span></span></div>`;
     }
 
     const htmlBg = { key: null, img: null, seq: 0, status: '' };
@@ -7265,7 +7268,8 @@
       await Promise.all(tasks);
     }
 
-    async function buildHtmlBgImage(html, w, h) {
+    // layer: 'base' = data-layer="top" 요소를 뺀 배경 / 'top' = 그 요소만 (나머지는 투명)
+    async function buildHtmlBgImage(html, w, h, layer = 'base') {
       const doc = new DOMParser().parseFromString(html || '', 'text/html');
       doc.querySelectorAll('script, iframe, object, embed, link, meta, base').forEach(el => el.remove());
       await inlineHtmlUrls(doc);
@@ -7277,6 +7281,15 @@
         `body{position:relative;font-family:"Pretendard",sans-serif;}` +
         `*{box-sizing:border-box;}`;
       doc.head.insertBefore(baseStyle, doc.head.firstChild);
+
+      // 위층/아래층 나누기 (자리는 그대로 두고 보이기만 끔 → 위치가 똑같이 맞음)
+      const layerStyle = doc.createElement('style');
+      layerStyle.textContent = layer === 'top'
+        ? `html,body{background:transparent !important;}` +
+          `body *{visibility:hidden !important;}` +
+          `[data-layer="top"],[data-layer="top"] *{visibility:visible !important;}`
+        : `[data-layer="top"]{visibility:hidden !important;}`;
+      doc.head.appendChild(layerStyle); // 사용자 스타일보다 뒤에 둬서 우선 적용
 
       const xhtml = new XMLSerializer().serializeToString(doc.documentElement);
       const svg =
@@ -7300,9 +7313,15 @@
         htmlBg.key = key;
         const mySeq = ++htmlBg.seq;
         setHtmlBgStatus('그리는 중…');
-        buildHtmlBgImage(state.bgHtml, w, h).then(img => {
+        const html = state.bgHtml;
+        const hasTop = /data-layer\s*=\s*["']?top/i.test(html || '');
+        Promise.all([
+          buildHtmlBgImage(html, w, h, 'base'),
+          hasTop ? buildHtmlBgImage(html, w, h, 'top') : Promise.resolve(null)
+        ]).then(([img, topImg]) => {
           if (mySeq !== htmlBg.seq) return;
           htmlBg.img = img;
+          htmlBg.topImg = topImg;
           htmlBg.size = { w, h };
           setHtmlBgStatus(`적용됨 · 배경 크기 ${w} × ${h}px`);
           render();
@@ -7321,6 +7340,12 @@
       if (!(state.bgHtml || '').trim()) return;
       const img = getHtmlBgImage(canvas.width, canvas.height);
       if (img) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    // data-layer="top" 요소: 본문·이미지 위에 그리기 (스티커보다는 아래)
+    function drawHtmlTopLayer() {
+      if (state.bgType !== 'html' || !(state.bgHtml || '').trim()) return;
+      if (htmlBg.topImg) ctx.drawImage(htmlBg.topImg, 0, 0, canvas.width, canvas.height);
     }
 
     // 입력창
