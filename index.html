@@ -1170,6 +1170,110 @@
       cursor: pointer;
     }
     .btn-mini:hover { border-color: #51aae1; color: #51aae1; }
+
+    /* HTML 배경 입력 */
+    .html-bg-input {
+      min-height: 220px !important;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+      font-size: 12px !important;
+      line-height: 1.55 !important;
+      letter-spacing: 0 !important;
+      white-space: pre;
+      overflow-x: auto;
+      tab-size: 2;
+    }
+    .btn-html-mini {
+      padding: 4px 9px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-html-mini:hover { border-color: #51aae1; color: #51aae1; }
+    /* HTML 예시 설정 창 */
+    #htmlex-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 15, 18, 0.35);
+      backdrop-filter: blur(5px);
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.25s ease-out;
+    }
+    .htmlex-card {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 24px;
+      background: linear-gradient(170deg, #ffffff 55%, #f2f9fe);
+      border-radius: 26px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 1px rgba(14, 15, 18, 0.08), 0 40px 80px -40px rgba(14, 15, 18, 0.55);
+    }
+    .htmlex-card .preset-header { margin-bottom: 0; }
+    .htmlex-field { display: flex; flex-direction: column; gap: 8px; }
+    .htmlex-label { font-size: 12px; font-weight: 800; color: #475569; }
+    .htmlex-hint { font-size: 11px; color: #94a3b8; }
+    .htmlex-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+    .htmlex-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 1px rgba(14, 15, 18, 0.12);
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s ease;
+    }
+    .htmlex-swatch:hover { transform: scale(1.08); }
+    .htmlex-swatch.on { box-shadow: 0 0 0 2px var(--rx-k, #1a1b1d); }
+    #in-htmlex-label { border-radius: 999px !important; padding-left: 14px !important; letter-spacing: 0.04em; }
+    .htmlex-note {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748b;
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 9px 12px;
+    }
+    .htmlex-actions { display: flex; gap: 8px; }
+    .htmlex-btn {
+      flex: 1;
+      height: 42px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--rx-k, #1a1b1d);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px -12px rgba(14, 15, 18, 0.7);
+      transition: background 0.15s ease;
+    }
+    .htmlex-btn:hover { background: var(--rx-p, #51aae1); }
+    .htmlex-btn.ghost {
+      background: #ffffff;
+      color: var(--rx-k, #1a1b1d);
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.14);
+    }
+    .htmlex-btn.ghost:hover { background: #f8fafc; }
+
+    .html-bg-status {
+      font-size: 11px;
+      font-weight: 700;
+      color: #51aae1;
+      min-height: 14px;
+    }
     @media (pointer: coarse) {
       .st-handle { width: 22px; height: 22px; margin: -11px 0 0 -11px; }
       .st-rotate { width: 32px; height: 32px; margin: 18px 0 0 -16px; }
@@ -1901,7 +2005,7 @@
     /* 맨 위 바 오른쪽 칩 */
     .editor { position: relative; }
     .editor::after {
-      content: "v3.1";
+      content: "v3.2";
       position: absolute;
       top: 21px;
       right: 21px;
@@ -2652,7 +2756,7 @@
           <input type="file" id="in-chat-img-file" accept="image/*" multiple style="display:none;">
         </label>
         <div class="thumb-list" id="chat-img-list" style="display:none;"></div>
-        <span style="font-size:11.5px; color:var(--text-sub); line-height:1.5;">*사진을 누르면 커서 위치에 <b>[1] [사진1]</b>이 들어가요!</span>
+        <span style="font-size:11.5px; color:var(--text-sub); line-height:1.5;">*사진을 누르면 커서 위치에 <b>[1] [사진1]</b>이 들어갑니다.</span>
       </div>
 
       <!-- 일반 모드 전용: 본문 이미지 삽입 영역 -->
@@ -2688,7 +2792,7 @@
 
             <span class="label-sub">이미지 영역 (높이/너비)</span>
             <div class="range-row">
-              <input type="range" id="in-insert-size" min="150" max="650" step="10" value="380">
+              <input type="range" id="in-insert-size" min="150" max="1000" step="10" value="380">
               <span id="insert-size-val">380px</span>
             </div>
 
@@ -2880,6 +2984,15 @@
       <div class="panel-card-title">✦ 타이포그래피</div>
 
       <div class="field-group">
+        <span class="label-sub">본문 세로 정렬</span>
+        <div class="seg-buttons" id="valign-group">
+          <button type="button" data-valign="top">상단</button>
+          <button type="button" data-valign="middle" class="on">가운데</button>
+          <button type="button" data-valign="bottom">하단</button>
+        </div>
+      </div>
+
+      <div class="field-group">
         <span class="label-sub">서체 선택</span>
         <div class="seg-buttons" id="font-group">
           <button data-font="Pretendard" class="on">프리텐다드</button>
@@ -3009,6 +3122,7 @@
           <button data-bgtype="gradient">그라데이션</button>
           <button data-bgtype="pattern">패턴</button>
           <button data-bgtype="image">이미지</button>
+          <button data-bgtype="html">HTML</button>
         </div>
       </div>
 
@@ -3083,6 +3197,23 @@
           <input type="range" id="in-pat-opacity" min="5" max="100" step="1" value="30">
           <span id="pat-opacity-val">30%</span>
         </div>
+      </div>
+
+      <!-- HTML 배경 -->
+      <div class="field-group" id="html-controls" style="display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <span class="label-sub">배경 HTML</span>
+          <div style="display:flex; gap:5px;">
+            <button type="button" class="btn-html-mini" id="btn-html-bg-example">예시 넣기</button>
+            <button type="button" class="btn-html-mini" id="btn-html-bg-clear">비우기</button>
+          </div>
+        </div>
+        <textarea id="in-bg-html" class="html-bg-input" spellcheck="false" placeholder="<style>&#10;  body { background: #51aae1; }&#10;</style>&#10;<div class=&quot;deco&quot;></div>"></textarea>
+        <span class="html-bg-status" id="html-bg-status"></span>
+        <span style="font-size:11.5px; color:var(--text-sub); line-height:1.6;">
+          *<b>&lt;style&gt; 태그 사용 가능</b>, 스크립트는 실행되지 않습니다.<br>
+          *외부 이미지/폰트는 불러올 수 있는 것만 들어갑니다.
+        </span>
       </div>
 
       <div class="field-group" id="image-controls" style="display:none;">
@@ -3298,6 +3429,55 @@
   </button>
 
   <!-- 프리셋 관리 모달 창 -->
+  <!-- HTML 배경 예시 설정 창 -->
+  <div id="htmlex-modal">
+    <div class="htmlex-card">
+      <div class="preset-header">
+        <div class="preset-title">✦ 기본 html 배경</div>
+        <button type="button" class="preset-close-btn" id="btn-htmlex-close">✕</button>
+      </div>
+
+      <div class="htmlex-field">
+        <span class="htmlex-label">배경</span>
+        <div class="seg-buttons" id="htmlex-tone-group">
+          <button type="button" data-tone="light" class="on">라이트</button>
+          <button type="button" data-tone="dark">다크</button>
+        </div>
+      </div>
+
+      <div class="htmlex-field">
+        <span class="htmlex-label">포인트컬러</span>
+        <div class="htmlex-swatches" id="htmlex-swatches">
+          <button type="button" class="htmlex-swatch" data-color="#51aae1" style="background:#51aae1;" title="블루"></button>
+          <button type="button" class="htmlex-swatch" data-color="#e86aa8" style="background:#e86aa8;" title="핑크"></button>
+          <button type="button" class="htmlex-swatch" data-color="#9b1c2e" style="background:#9b1c2e;" title="레드"></button>
+          <button type="button" class="htmlex-swatch" data-color="#8b7cf6" style="background:#8b7cf6;" title="퍼플"></button>
+          <button type="button" class="htmlex-swatch" data-color="#2fbf9b" style="background:#2fbf9b;" title="민트"></button>
+          <button type="button" class="htmlex-swatch" data-color="#f2994a" style="background:#f2994a;" title="오렌지"></button>
+          <button type="button" class="htmlex-swatch" data-color="#1a1b1d" style="background:#1a1b1d;" title="블랙"></button>
+        </div>
+        <div class="color-picker-wrap">
+          <span class="picker-label-text">직접 선택</span>
+          <input type="color" id="in-htmlex-color" value="#51aae1">
+          <input type="text" id="in-htmlex-hex" class="color-code-input" value="#51AAE1" maxlength="7">
+        </div>
+      </div>
+
+      <div class="htmlex-field">
+        <span class="htmlex-label">우상단 문구</span>
+        <input type="text" id="in-htmlex-label" placeholder="PURE×UXI" maxlength="24">
+        <span class="htmlex-hint">자유롭게 문구를 변경해 보세요.</span>
+      </div>
+
+      <div class="htmlex-note" id="htmlex-overwrite-note" style="display:none;"><b>html 넣기</b>를 누르면 지금 설정한 HTML로 덮어씌웁니다.</div>
+
+      <div class="htmlex-actions">
+        <button type="button" class="htmlex-btn ghost" id="btn-htmlex-cancel">취소</button>
+        <button type="button" class="htmlex-btn" id="btn-htmlex-apply">html 넣기</button>
+      </div>
+    </div>
+  </div>
+
   <div id="preset-modal">
     <div class="preset-card-container">
       <div class="preset-header">
@@ -3466,7 +3646,9 @@
       patType: 'dot',
       patColor: '#51aae1',
       patSize: 28,
-      patOpacity: 0.3
+      patOpacity: 0.3,
+      bgHtml: '',      // HTML 배경 코드
+      vAlign: 'middle' // 본문 세로 정렬: top / middle / bottom
     };
 
     // ==========================================
@@ -3512,7 +3694,8 @@
         a.avatars.length === b.avatars.length &&
         a.avatars.every((v, i) => v === b.avatars[i]) &&
         sameIdData(a.stickers, b.stickers) &&
-        sameIdData(a.chatImages, b.chatImages);
+        sameIdData(a.chatImages, b.chatImages) &&
+        (a.bgHtml || '') === (b.bgHtml || '');
     }
 
     async function saveAutosaveImages(imgs) {
@@ -3549,7 +3732,7 @@
     }
 
     function saveToStorage() {
-      const { bgImg, insertImg, bgImgData, insertImgData, profiles, stickers, chatImages, ...rest } = state;
+      const { bgImg, insertImg, bgImgData, insertImgData, profiles, stickers, chatImages, bgHtml, ...rest } = state;
 
       // 1) 글/설정값 → localStorage
       const dataToSave = JSON.parse(JSON.stringify(rest));
@@ -3568,7 +3751,8 @@
         insertImgData: insertImgData || null,
         avatars: profiles.map(p => p.avatarData || null),
         stickers: (stickers || []).map(st => ({ id: st.id, data: st.data })),
-        chatImages: (chatImages || []).map(c => ({ id: c.id, data: c.data }))
+        chatImages: (chatImages || []).map(c => ({ id: c.id, data: c.data })),
+        bgHtml: bgHtml || ''
       }).catch(err => console.warn('이미지 자동저장 실패:', err));
     }
 
@@ -3644,6 +3828,7 @@
             const dataById = new Map(idbImages.chatImages.map(x => [x.id, x.data]));
             parsed.chatImages.forEach(c => { if (dataById.has(c.id)) c.data = dataById.get(c.id); });
           }
+          if (typeof idbImages.bgHtml === 'string') parsed.bgHtml = idbImages.bgHtml;
           lastSavedImages = idbImages;
         }
         Object.assign(state, parsed);
@@ -3725,6 +3910,7 @@
           });
         };
         syncGroup('font-group', 'font', state.font);
+        syncGroup('valign-group', 'valign', state.vAlign || 'middle');
         
         // 카드 비율 상태 복원 (메인 + 추가 비율 통합 동기화)
         document.querySelectorAll('#ratio-group button:not(#btn-ratio-expand), #ratio-extra-group button, #btn-ratio-auto').forEach(b => {
@@ -4455,6 +4641,8 @@
         drawGradientBackground();
       } else if (state.bgType === 'pattern') {
         drawPatternBackground();
+      } else if (state.bgType === 'html') {
+        drawHtmlBackground();
       } else if (state.bgType === 'solid' || !state.bgImg) {
         ctx.fillStyle = state.bg;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -5388,7 +5576,7 @@
           autoNeededH = state.padding * 2 + titleHeight + creditReserve + bodyH;
         }
 
-        let curRenderY = textBox.y + Math.max(0, (textBox.h - layout.totalH) / 2);
+        let curRenderY = textBox.y + Math.max(0, (textBox.h - layout.totalH) * getVAlignFactor());
         const theme = state.chatTheme || 'kakao';
 
         // --- 블록별 실제 렌더링 루프 ---
@@ -5581,7 +5769,7 @@
           autoNeededH = state.padding * 2 + titleHeight + creditReserve + layout.totalH;
         }
 
-        let curY = workAreaY + Math.max(0, (workAreaH - layout.totalH) / 2);
+        let curY = workAreaY + Math.max(0, (workAreaH - layout.totalH) * getVAlignFactor());
 
         layout.blocks.forEach(b => {
           // --- 1. 날짜 및 시스템 메시지 (서식 태그 렌더링 지원) ---
@@ -6711,7 +6899,15 @@
       document.getElementById('gradient-controls').style.display = t === 'gradient' ? 'flex' : 'none';
       document.getElementById('pattern-controls').style.display = t === 'pattern' ? 'flex' : 'none';
       document.getElementById('image-controls').style.display = t === 'image' ? 'flex' : 'none';
+      document.getElementById('html-controls').style.display = t === 'html' ? 'flex' : 'none';
       document.getElementById('solid-label').innerText = t === 'pattern' ? '바탕 색상' : '배경 색상';
+
+      // HTML 입력창 동기화 (입력 중일 때는 건드리지 않음)
+      const htmlInput = document.getElementById('in-bg-html');
+      if (document.activeElement !== htmlInput && htmlInput.value !== (state.bgHtml || '')) {
+        htmlInput.value = state.bgHtml || '';
+      }
+      if (t === 'html' && htmlBg.status) setHtmlBgStatus(htmlBg.status);
 
       const setPair = (pickerId, hexId, val) => {
         document.getElementById(pickerId).value = val;
@@ -6840,6 +7036,400 @@
         applyViewZoom();
         updateStickerOverlay();
       }
+    });
+
+    // ==========================================
+    // HTML 배경 (<style> 사용 가능)
+    // - 입력한 HTML을 카드 크기(px 그대로) 그림으로 바꿔서 배경에 깔아요
+    // - 스크립트는 실행되지 않아요 (그림으로만 변환)
+    // ==========================================
+    const HTML_EX_DEFAULT_LABEL = 'PURE×UXI';
+
+    function makeHtmlBgExample(point, label, tone = 'light') {
+      if (tone === 'dark') return `<style>
+  :root {
+    --point: ${point};
+  }
+
+  body {
+    background: #0b0d11;
+  }
+
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--point) 50%, transparent) 0%, transparent 68%);
+  }
+  .glow.a { width: 900px; height: 900px; left: -320px; top: -340px; }
+  .glow.b { width: 720px; height: 720px; right: -280px; bottom: -300px; opacity: 0.6; }
+
+  .glass {
+    position: absolute;
+    inset: 44px;
+    border-radius: 32px;
+    background: linear-gradient(150deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 100%);
+    border: 1.5px solid rgba(255,255,255,0.14);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 30px 80px rgba(0,0,0,0.45);
+  }
+  .glass::before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--point), transparent);
+  }
+
+  .tag {
+    position: absolute;
+    top: 74px;
+    right: 80px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font: 800 18px/1 sans-serif;
+    letter-spacing: 0.06em;
+    color: var(--point);
+  }
+  .tag::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--point);
+    box-shadow: 0 0 14px var(--point);
+  }
+
+  .line {
+    position: absolute;
+    top: 81px;
+    left: 80px;
+    width: 120px;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--point), transparent);
+  }
+</style>
+
+<div class="glow a"></div>
+<div class="glow b"></div>
+<div class="glass"></div>
+<div class="tag">${label}</div>
+<div class="line"></div>`;
+      return `<style>
+  :root {
+    --point: ${point};
+  }
+
+  body {
+    background: linear-gradient(160deg, #f6f9fc 0%, #edf3f8 55%, #f8fafc 100%);
+  }
+
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--point) 38%, transparent) 0%, transparent 68%);
+  }
+  .glow.a { width: 900px; height: 900px; left: -340px; top: -360px; }
+  .glow.b { width: 760px; height: 760px; right: -300px; bottom: -320px; opacity: 0.75; }
+
+  .glass {
+    position: absolute;
+    inset: 44px;
+    border-radius: 32px;
+    background: linear-gradient(150deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.52) 50%, rgba(255,255,255,0.68) 100%);
+    border: 1.5px solid rgba(255,255,255,0.95);
+    box-shadow:
+      inset 0 1px 0 #ffffff,
+      0 0 0 1px rgba(15, 23, 42, 0.04),
+      0 24px 60px rgba(30, 60, 90, 0.12);
+  }
+
+  .tag {
+    position: absolute;
+    top: 70px;
+    right: 74px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 16px 9px 13px;
+    border-radius: 999px;
+    background: #111316;
+    font: 800 15px/1 sans-serif;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(17, 19, 22, 0.18);
+  }
+  .tag::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--point);
+    box-shadow: 0 0 10px var(--point);
+  }
+
+  .line {
+    position: absolute;
+    top: 84px;
+    left: 78px;
+    display: flex;
+    gap: 6px;
+  }
+  .line span {
+    height: 4px;
+    border-radius: 4px;
+  }
+  .line span:nth-child(1) { width: 56px; background: var(--point); }
+  .line span:nth-child(2) { width: 18px; background: #111316; }
+  .line span:nth-child(3) { width: 8px; background: color-mix(in srgb, var(--point) 45%, transparent); }
+</style>
+
+<div class="glow a"></div>
+<div class="glow b"></div>
+<div class="glass"></div>
+<div class="tag">${label}</div>
+<div class="line"><span></span><span></span><span></span></div>`;
+    }
+
+    const htmlBg = { key: null, img: null, seq: 0, status: '' };
+    const htmlUrlCache = new Map(); // 외부 이미지/폰트 주소 → data URL
+
+    function setHtmlBgStatus(text, isError = false) {
+      htmlBg.status = text;
+      const el = document.getElementById('html-bg-status');
+      if (!el) return;
+      el.innerText = text;
+      el.style.color = isError ? '#e11d48' : '';
+    }
+
+    async function urlToDataUrl(url) {
+      if (htmlUrlCache.has(url)) return htmlUrlCache.get(url);
+      const job = (async () => {
+        try {
+          const res = await fetch(url, { mode: 'cors' });
+          if (!res.ok) return null;
+          const blob = await res.blob();
+          return await new Promise((resolve) => {
+            const fr = new FileReader();
+            fr.onload = () => resolve(fr.result);
+            fr.onerror = () => resolve(null);
+            fr.readAsDataURL(blob);
+          });
+        } catch (e) {
+          return null; // 외부 사이트가 막아두면 못 불러옴
+        }
+      })();
+      htmlUrlCache.set(url, job);
+      return job;
+    }
+
+    function resolveUrl(u) {
+      if (!u || /^(data:|blob:|#)/i.test(u)) return null;
+      try { return new URL(u, location.href).href; } catch (e) { return null; }
+    }
+
+    // 그림으로 바꾸면 외부 파일을 못 읽어서, 미리 받아서 HTML 안에 넣어둠
+    async function inlineHtmlUrls(doc) {
+      const tasks = [];
+
+      doc.querySelectorAll('img[src], image[href]').forEach(el => {
+        const attr = el.hasAttribute('src') ? 'src' : 'href';
+        const abs = resolveUrl(el.getAttribute(attr));
+        if (!abs) return;
+        tasks.push(urlToDataUrl(abs).then(d => { if (d) el.setAttribute(attr, d); }));
+      });
+
+      const urlRe = /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi;
+      const fixCss = async (css) => {
+        const found = [...css.matchAll(urlRe)].map(m => m[2].trim());
+        const map = new Map();
+        await Promise.all([...new Set(found)].map(async u => {
+          const abs = resolveUrl(u);
+          if (abs) map.set(u, await urlToDataUrl(abs));
+        }));
+        return css.replace(urlRe, (m, q, u) => {
+          const d = map.get(u.trim());
+          return d ? `url("${d}")` : m;
+        });
+      };
+
+      doc.querySelectorAll('style').forEach(el => {
+        tasks.push(fixCss(el.textContent).then(css => { el.textContent = css; }));
+      });
+      doc.querySelectorAll('[style]').forEach(el => {
+        tasks.push(fixCss(el.getAttribute('style')).then(css => el.setAttribute('style', css)));
+      });
+
+      await Promise.all(tasks);
+    }
+
+    async function buildHtmlBgImage(html, w, h) {
+      const doc = new DOMParser().parseFromString(html || '', 'text/html');
+      doc.querySelectorAll('script, iframe, object, embed, link, meta, base').forEach(el => el.remove());
+      await inlineHtmlUrls(doc);
+
+      // 기본값: 여백 없이 카드 크기에 딱 맞게 (사용자 스타일이 뒤에 오니까 덮어쓸 수 있음)
+      const baseStyle = doc.createElement('style');
+      baseStyle.textContent =
+        `html,body{margin:0;padding:0;width:${w}px;height:${h}px;overflow:hidden;}` +
+        `body{position:relative;font-family:"Pretendard",sans-serif;}` +
+        `*{box-sizing:border-box;}`;
+      doc.head.insertBefore(baseStyle, doc.head.firstChild);
+
+      const xhtml = new XMLSerializer().serializeToString(doc.documentElement);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+        `<foreignObject x="0" y="0" width="${w}" height="${h}">${xhtml}</foreignObject></svg>`;
+
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error('HTML을 그림으로 바꾸지 못했어요'));
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      });
+      if (img.decode) { try { await img.decode(); } catch (e) {} }
+      return img;
+    }
+
+    // render 중에 호출: 준비된 그림이 있으면 돌려주고, 바뀌었으면 새로 만들기 시작
+    function getHtmlBgImage(w, h) {
+      const key = `${w}x${h}|${state.bgHtml || ''}`;
+      if (htmlBg.key !== key) {
+        htmlBg.key = key;
+        const mySeq = ++htmlBg.seq;
+        setHtmlBgStatus('그리는 중…');
+        buildHtmlBgImage(state.bgHtml, w, h).then(img => {
+          if (mySeq !== htmlBg.seq) return;
+          htmlBg.img = img;
+          htmlBg.size = { w, h };
+          setHtmlBgStatus(`적용됨 · 배경 크기 ${w} × ${h}px`);
+          render();
+        }).catch(err => {
+          if (mySeq !== htmlBg.seq) return;
+          console.warn('HTML 배경 오류:', err);
+          setHtmlBgStatus('⚠ HTML을 그리지 못했어요. 닫는 태그나 따옴표를 확인해 주세요.', true);
+        });
+      }
+      return htmlBg.img; // 새 그림이 준비될 때까지는 직전 그림을 보여줌 (깜빡임 방지)
+    }
+
+    function drawHtmlBackground() {
+      ctx.fillStyle = state.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!(state.bgHtml || '').trim()) return;
+      const img = getHtmlBgImage(canvas.width, canvas.height);
+      if (img) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+
+    // 입력창
+    const htmlBgInput = document.getElementById('in-bg-html');
+    let htmlBgTimer = null;
+    htmlBgInput.addEventListener('input', (e) => {
+      state.bgHtml = e.target.value;
+      clearTimeout(htmlBgTimer);
+      htmlBgTimer = setTimeout(() => render(), 400); // 타이핑 멈추면 반영
+    });
+    // 입력창에서 Tab 누르면 들여쓰기
+    htmlBgInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab' || e.shiftKey || e.ctrlKey || e.metaKey) return;
+      e.preventDefault();
+      replaceTextRange(htmlBgInput, htmlBgInput.selectionStart, htmlBgInput.selectionEnd, '  ');
+    });
+
+    // 예시 넣기: 포인트 색상 + 우상단 문구를 먼저 고르는 창
+    const htmlExModal = document.getElementById('htmlex-modal');
+    const htmlExColor = document.getElementById('in-htmlex-color');
+    const htmlExHex = document.getElementById('in-htmlex-hex');
+    const htmlExLabel = document.getElementById('in-htmlex-label');
+
+    function setHtmlExColor(hex) {
+      htmlExColor.value = hex;
+      htmlExHex.value = hex.toUpperCase();
+      document.querySelectorAll('#htmlex-swatches .htmlex-swatch').forEach(sw => {
+        sw.classList.toggle('on', sw.dataset.color.toLowerCase() === hex.toLowerCase());
+      });
+    }
+
+    function closeHtmlExModal() {
+      htmlExModal.style.display = 'none';
+    }
+
+    document.getElementById('btn-html-bg-example').addEventListener('click', () => {
+      document.getElementById('htmlex-overwrite-note').style.display = (state.bgHtml || '').trim() ? 'block' : 'none';
+      setHtmlExColor(htmlExColor.value || '#51aae1');
+      htmlExModal.style.display = 'flex';
+      setTimeout(() => htmlExLabel.focus(), 50);
+    });
+
+    document.getElementById('htmlex-tone-group').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      document.querySelectorAll('#htmlex-tone-group button').forEach(b => b.classList.toggle('on', b === btn));
+    });
+
+    document.getElementById('htmlex-swatches').addEventListener('click', (e) => {
+      const sw = e.target.closest('.htmlex-swatch');
+      if (sw) setHtmlExColor(sw.dataset.color);
+    });
+    htmlExColor.addEventListener('input', (e) => setHtmlExColor(e.target.value));
+    htmlExHex.addEventListener('input', (e) => {
+      let v = e.target.value.trim();
+      if (!v.startsWith('#')) v = '#' + v;
+      if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+        htmlExColor.value = v;
+        document.querySelectorAll('#htmlex-swatches .htmlex-swatch').forEach(sw => {
+          sw.classList.toggle('on', sw.dataset.color.toLowerCase() === v.toLowerCase());
+        });
+      }
+    });
+
+    function applyHtmlExample() {
+      const label = escapeHtml(htmlExLabel.value.trim() || HTML_EX_DEFAULT_LABEL);
+      const tone = document.querySelector('#htmlex-tone-group button.on')?.dataset.tone || 'light';
+      const html = makeHtmlBgExample(htmlExColor.value || '#51aae1', label, tone);
+      replaceTextRange(htmlBgInput, 0, htmlBgInput.value.length, html); // Ctrl+Z로 되돌리기 가능
+      state.bgHtml = htmlBgInput.value;
+
+      // 배경 밝기에 맞춰 글자색 자동 변경 (단색 배경의 화이트/블랙 버튼과 같은 색)
+      state.ink = tone === 'dark' ? '#f4f4f4' : '#1a1b1d';
+      syncInkUI(state.ink);
+
+      closeHtmlExModal();
+      render();
+    }
+
+    document.getElementById('btn-htmlex-apply').addEventListener('click', applyHtmlExample);
+    document.getElementById('btn-htmlex-cancel').addEventListener('click', closeHtmlExModal);
+    document.getElementById('btn-htmlex-close').addEventListener('click', closeHtmlExModal);
+    htmlExModal.addEventListener('click', (e) => { if (e.target === htmlExModal) closeHtmlExModal(); });
+    htmlExLabel.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); applyHtmlExample(); }
+      if (e.key === 'Escape') closeHtmlExModal();
+    });
+
+    document.getElementById('btn-html-bg-clear').addEventListener('click', () => {
+      replaceTextRange(htmlBgInput, 0, htmlBgInput.value.length, '');
+      state.bgHtml = '';
+      render();
+    });
+
+    // ==========================================
+    // 본문 세로 정렬 (상단 / 가운데 / 하단)
+    // ==========================================
+    function getVAlignFactor() {
+      if (state.vAlign === 'top') return 0;
+      if (state.vAlign === 'bottom') return 1;
+      return 0.5;
+    }
+
+    document.getElementById('valign-group').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      state.vAlign = btn.dataset.valign;
+      document.querySelectorAll('#valign-group button').forEach(b => b.classList.toggle('on', b === btn));
+      render();
     });
 
     // ==========================================
@@ -7439,7 +8029,15 @@
       if (e.target.tagName !== 'BUTTON') return;
       document.querySelectorAll('#bgtype-group button').forEach(b => b.classList.remove('on'));
       e.target.classList.add('on');
+      const prevBgType = state.bgType;
       state.bgType = e.target.dataset.bgtype;
+
+      // HTML 배경으로 바꾸면 테두리 장식은 '없음'으로 (원하면 다시 고를 수 있음)
+      if (state.bgType === 'html' && prevBgType !== 'html') {
+        state.frameStyle = 'none';
+        document.querySelectorAll('#frame-group button').forEach(b => b.classList.toggle('on', b.dataset.frame === 'none'));
+        cornerIconRow.style.display = 'none';
+      }
 
       syncBgTypeUI();
       render();
@@ -8337,6 +8935,7 @@
       resetStickerSelection();
       state.chatImages = Array.isArray(preset.chatImages) ? JSON.parse(JSON.stringify(preset.chatImages)) : [];
       renderChatImageList();
+      state.vAlign = preset.vAlign || 'middle'; // 세로 정렬이 없던 예전 프리셋은 원래대로 가운데
 
       const inText = document.getElementById('in-text');
       inText.value = state.text || '';
@@ -8417,6 +9016,7 @@
         });
       };
       syncGroup('font-group', 'font', state.font);
+        syncGroup('valign-group', 'valign', state.vAlign || 'middle');
       
       // 기존 syncGroup('ratio-group', 'ratio', state.ratio); 대신:
       document.querySelectorAll('#ratio-group button:not(#btn-ratio-expand), #ratio-extra-group button, #btn-ratio-auto').forEach(b => {
