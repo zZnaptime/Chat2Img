@@ -4637,26 +4637,40 @@
     const blurSmallCanvas = document.createElement('canvas');
 
     function drawRunChars(chars, x, y, blur, fs, prevRun, nextRun) {
-      const drawAt = (c2, ox, oy) => {
+      const drawAt = (c2, ox, oy, list = chars) => {
         let cx = ox;
-        for (let c = 0; c < chars.length; c++) {
-          const ch = chars[c];
+        for (let c = 0; c < list.length; c++) {
+          const ch = list[c];
           c2.fillText(ch, cx, oy);
           cx += ctx.measureText(ch).width + state.letterSpacing;
         }
       };
       if (!blur) { drawAt(ctx, x, y); return; }
 
+      // 검열 안쪽 앞뒤 띄어쓰기는 상자에서 빼기 (|| 반갑습니다 || 처럼 써도 공백이 살아 있게)
+      const isSpace = (ch) => /^\s$/.test(ch);
+      let lead = 0;
+      while (lead < chars.length && isSpace(chars[lead])) lead++;
+      let trail = chars.length;
+      while (trail > lead && isSpace(chars[trail - 1])) trail--;
+      if (trail <= lead) return;
+      const chW = (ch) => ctx.measureText(ch).width + state.letterSpacing;
+      let leadW = 0;
+      for (let i = 0; i < lead; i++) leadW += chW(chars[i]);
+      const core = chars.slice(lead, trail);
       let w = 0;
-      chars.forEach(ch => { w += ctx.measureText(ch).width + state.letterSpacing; });
+      core.forEach(ch => { w += chW(ch); });
+      w -= state.letterSpacing > 0 ? state.letterSpacing : 0; // 마지막 글자 뒤 자간은 상자에 안 넣기
       if (w <= 0) return;
+      const cx0 = x + leadW;
 
       // 앞뒤 조각도 검열이면 상자를 이어 붙임 (||**김**윳|| 처럼 안에 서식이 섞여도 한 상자)
-      const joinL = !!(prevRun && prevRun.blur);
-      const joinR = !!(nextRun && nextRun.blur);
-      const pad = Math.max(2, fs * 0.1);
-      const boxX = x - (joinL ? 0 : pad);
-      const boxW = w + (joinL ? 0 : pad) + (joinR ? 0 : pad);
+      const joinL = !!(prevRun && prevRun.blur) && lead === 0;
+      const joinR = !!(nextRun && nextRun.blur) && trail === chars.length;
+      // 바깥 끝은 글자 폭보다 살짝 안쪽으로 → 앞뒤 띄어쓰기가 또렷하게 보이게
+      const inset = Math.min(fs * 0.04, w * 0.1);
+      const boxX = cx0 + (joinL ? 0 : inset);
+      const boxW = w - (joinL ? 0 : inset) - (joinR ? 0 : inset);
       const boxH = fs * 1.2;
       const boxY = y - boxH / 2;
       const rad = Math.max(2, fs * 0.14);
@@ -4672,7 +4686,7 @@
       wc.fillStyle = ctx.fillStyle;
       wc.textBaseline = 'middle';
       wc.textAlign = 'left';
-      drawAt(wc, x - boxX, y - boxY);
+      drawAt(wc, cx0 - boxX, y - boxY, core);
 
       // 2) 반씩 줄여가며 아주 작게 → 3) 상자 크기로 다시 키우면 매끈하게 흐려짐
       const target = Math.max(6, fs * 0.7); // 클수록 더 흐림
