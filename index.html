@@ -4939,13 +4939,16 @@
       // 내용 영역
       const innerL = x + b.bw + (isRight ? b.padX : b.stripeIn + b.stripeW + b.padX * 0.75);
       const innerR = x + W - b.bw - (isRight ? b.stripeIn + b.stripeW + b.padX * 0.75 : b.padX);
+      // 프로필 사진은 위쪽에 고정, 글이 사진보다 짧을 때만 글을 사진 높이 가운데에
+      const innerTop = top + b.bw + b.padY;
+      const innerH = Math.max(b.textH, b.av);
       if (b.av) {
         const avX = isRight ? innerR - b.av : innerL;
-        drawSquareAvatar(prof.avatarImg, avX, top + (b.boxH - b.av) / 2, b.av, P.ink, b.bw);
+        drawSquareAvatar(prof.avatarImg, avX, innerTop, b.av, P.ink, b.bw);
       }
       const tx0 = isRight ? innerL : innerL + b.av + b.gap;
       const tx1 = isRight ? innerR - b.av - b.gap : innerR;
-      let cy = top + (b.boxH - b.textH) / 2;
+      let cy = innerTop + (innerH - b.textH) / 2;
 
       if (b.chatImage) {
         drawChatImageBubble(b.chatImage, isRight ? tx1 - b.imgW : tx0, cy, b.imgW, b.imgH, true, 0);
@@ -4973,7 +4976,7 @@
         const sp = nfs * 0.14;
         const triW = nfs * 1.1;
         const textW = measureSpacedText('NEXT', sp);
-        const endX = (isRight ? x + W - b.stripeIn - b.stripeW - fs * 0.35 : x + W - b.bw - fs * 0.55);
+        const endX = isRight ? tx1 : x + W - b.bw - fs * 0.55; // 오른쪽 정렬이면 사진 밑이 아니라 글 영역 끝에
         const ny = top + b.boxH - b.bw - nfs * 1.1;
         drawSpacedText('NEXT', endX - triW - nfs * 0.45 - textW, ny, sp);
         ctx.beginPath();
@@ -10736,7 +10739,7 @@
       return {
         bg: {
           enabled: !isMulti,
-          desc: isMulti ? '한 장만 넣을 수 있어요' : '본문 배경으로 들어가는 사진'
+          desc: isMulti ? '한 장만 넣을 수 있습니다' : '본문 배경으로 들어가는 사진'
         },
         chat: {
           enabled: true,
@@ -10751,8 +10754,8 @@
         insert: {
           enabled: !isMulti && !isChat,
           desc: isChat
-            ? (isMulti ? '일반 모드에서 한 장만' : '일반 모드에서만 쓸 수 있어요')
-            : (isMulti ? '한 장만 넣을 수 있어요' : '본문 옆에 같이 들어가는 사진')
+            ? (isMulti ? '일반 모드에서 한 장만' : '일반 모드에서만 쓸 수 있습니다')
+            : (isMulti ? '한 장만 넣을 수 있습니다' : '본문 옆에 같이 들어가는 사진')
         }
       };
     }
