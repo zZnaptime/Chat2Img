@@ -2005,7 +2005,7 @@
     /* 맨 위 바 오른쪽 칩 */
     .editor { position: relative; }
     .editor::after {
-      content: "v3.1";
+      content: "v3.2";
       position: absolute;
       top: 21px;
       right: 21px;
@@ -2563,6 +2563,431 @@
     @media (prefers-reduced-motion: reduce) {
       .save-btn::before { animation: none; }
     }
+
+    /* ═══════════════════════════════════════════════
+       이미지 붙여넣기 → 넣을 곳 고르기 창
+    ═══════════════════════════════════════════════ */
+    #paste-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(14, 15, 18, 0.35);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    #paste-modal.open { display: flex; }
+    .paste-card {
+      width: 100%;
+      max-width: 760px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border-radius: 26px;
+      background: linear-gradient(170deg, #ffffff 55%, #f2f9fe);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 1px rgba(14, 15, 18, 0.08), 0 40px 80px -40px rgba(14, 15, 18, 0.55);
+      color: var(--rx-k);
+      letter-spacing: -0.03em;
+      animation: cardPopUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .paste-grabber, .paste-mhead { display: none; }
+
+    .paste-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .paste-head-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .paste-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 26px;
+      padding: 0 11px 0 9px;
+      border-radius: 999px;
+      background: var(--rx-k);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .paste-chip i, .paste-apply i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--rx-p);
+      flex-shrink: 0;
+    }
+    .paste-title { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: -0.05em; }
+    .paste-close {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--rx-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .paste-close:hover { background: rgba(14, 15, 18, 0.05); color: var(--rx-k); }
+
+    .paste-body { display: flex; gap: 20px; align-items: stretch; }
+    .paste-preview-col { width: 236px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+    .paste-preview {
+      position: relative;
+      height: 296px;
+      border-radius: 18px;
+      background-color: #F3F4F6;
+      background-image: linear-gradient(45deg, #E4E6EA 25%, transparent 25%, transparent 75%, #E4E6EA 75%),
+                        linear-gradient(45deg, #E4E6EA 25%, transparent 25%, transparent 75%, #E4E6EA 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .paste-preview > img.single {
+      max-width: calc(100% - 32px);
+      max-height: calc(100% - 32px);
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px -12px rgba(14, 15, 18, 0.45);
+    }
+    .paste-preview.multi { height: 230px; background-image: none; }
+    .paste-preview > img.stack {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 120px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 8px 18px -10px rgba(14, 15, 18, 0.5);
+    }
+    .paste-thumbs {
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      max-height: 128px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+    .paste-thumbs.show { display: grid; }
+    .paste-thumbs img {
+      width: 100%;
+      height: 58px;
+      object-fit: cover;
+      border-radius: 10px;
+      background: #F3F4F6;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+    }
+    .paste-thumbs img:first-child { box-shadow: 0 0 0 2px var(--rx-p); }
+    .paste-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px; }
+    .paste-meta-label { font-size: 12px; font-weight: 800; }
+    .paste-meta-info { font-size: 11px; font-weight: 700; color: var(--rx-sub); letter-spacing: 0; white-space: nowrap; }
+    .paste-preview-col.multi .paste-meta-label { font-size: 11px; font-weight: 700; color: var(--rx-sub); }
+
+    .paste-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+    .paste-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .paste-tile {
+      position: relative;
+      text-align: left;
+      border: 0;
+      cursor: pointer;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-family: inherit;
+      color: inherit;
+      letter-spacing: inherit;
+      transition: box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .paste-tile:hover:not(:disabled) { background: #fff; box-shadow: inset 0 0 0 1.5px rgba(47, 164, 222, 0.45); }
+    .paste-tile:focus-visible { outline: 2px solid var(--rx-p); outline-offset: 2px; }
+    .paste-tile.on {
+      background: #fff;
+      box-shadow: 0 0 0 1.5px rgba(47, 164, 222, 0.6), 0 10px 22px -12px rgba(47, 164, 222, 0.6);
+    }
+    .paste-tile:disabled { cursor: not-allowed; background: rgba(243, 244, 246, 0.7); box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.06); color: var(--rx-sub); }
+    .paste-tile-tags { position: absolute; top: 14px; right: 14px; display: flex; align-items: center; gap: 5px; }
+    .paste-tile-badge {
+      display: none;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: var(--rx-k);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 800;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .paste-tile.recommend .paste-tile-badge { display: flex; }
+    .paste-tile-key {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      background: #F3F4F6;
+      color: #4B5563;
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.12);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .paste-tile.on .paste-tile-key { background: var(--rx-p); color: #fff; box-shadow: none; }
+    .paste-tile:disabled .paste-tile-key { display: none; }
+    .paste-tile-icon {
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border-radius: 13px;
+      background: #F3F4F6;
+      color: var(--rx-k);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .paste-tile.on .paste-tile-icon { background: var(--rx-p); color: #fff; }
+    .paste-tile:disabled .paste-tile-icon { background: #E4E6EA; color: var(--rx-sub); }
+    .paste-tile-text { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+    .paste-tile-name { font-size: 15px; font-weight: 900; letter-spacing: -0.04em; }
+    .paste-tile-desc { font-size: 12px; font-weight: 500; color: #4B5563; line-height: 1.45; word-break: keep-all; }
+    .paste-tile-desc b { font-weight: 800; color: var(--rx-k); }
+    .paste-tile:disabled .paste-tile-desc { color: var(--rx-sub); font-weight: 600; }
+    .paste-tile-chev { display: none; color: var(--rx-sub); flex-shrink: 0; }
+
+    .paste-profile {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.08);
+    }
+    .paste-card.show-profile .paste-profile { display: flex; }
+    .paste-profile-label { font-size: 12px; font-weight: 800; }
+    .paste-profile-seg {
+      display: flex;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.08);
+    }
+    .paste-profile-seg button {
+      flex: 1;
+      min-width: 0;
+      height: 32px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #4B5563;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 4px;
+    }
+    .paste-profile-seg button:hover { color: var(--rx-k); }
+    .paste-profile-seg button.on { background: var(--rx-k); color: #fff; font-weight: 800; }
+
+    .paste-notice {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(47, 164, 222, 0.08);
+      box-shadow: inset 0 0 0 1px rgba(47, 164, 222, 0.22);
+      font-size: 12px;
+      font-weight: 600;
+      color: #1C5F86;
+    }
+    .paste-notice.show { display: flex; }
+    .paste-notice svg { flex-shrink: 0; }
+
+    .paste-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(14, 15, 18, 0.12);
+    }
+    .paste-hint { font-size: 12px; font-weight: 600; color: var(--rx-sub); }
+    .paste-hint b { color: var(--rx-k); font-weight: 800; }
+    .paste-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .paste-btn {
+      height: 44px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .paste-btn.ghost { background: #fff; color: var(--rx-k); box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.14); }
+    .paste-btn.ghost:hover { background: #F8FAFC; }
+    .paste-btn.primary { background: var(--rx-k); color: #fff; box-shadow: 0 10px 20px -12px rgba(14, 15, 18, 0.7); }
+    .paste-btn.primary i { box-shadow: 0 0 8px var(--rx-p); }
+    .paste-btn.primary:hover { background: var(--rx-p); }
+    .paste-btn.primary:hover i { background: #fff; box-shadow: 0 0 8px #fff; }
+    .paste-btn:disabled { opacity: 0.55; cursor: progress; }
+
+
+    /* 서체: 내 폰트 */
+    #font-group { flex-wrap: wrap; border-radius: 20px !important; }
+    #font-group button {
+      flex: 1 0 calc(33.33% - 3px);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    #font-group button.custom-font { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    #font-group button.custom-font .font-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    #font-group .font-del {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-family: 'Pretendard', sans-serif;
+      font-size: 9px;
+      line-height: 16px;
+      text-align: center;
+      background: rgba(14, 15, 18, 0.08);
+      opacity: 0.7;
+    }
+    #font-group .font-del:hover { opacity: 1; background: #e11d48; color: #fff; }
+    .font-dropzone { padding: 10px 12px !important; font-size: 12px !important; }
+    .font-missing-hint { font-size: 11.5px; font-weight: 600; color: #b45309; line-height: 1.5; }
+
+    /* 이미지 끌어다 놓기 */
+    #drop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999998;
+      padding: 18px;
+      background: rgba(14, 15, 18, 0.28);
+      pointer-events: none;
+    }
+    #drop-overlay.show { display: block; }
+    .drop-overlay-inner {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      border-radius: 26px;
+      border: 2.5px dashed rgba(255, 255, 255, 0.95);
+      background: rgba(47, 164, 222, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .drop-overlay-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 22px 14px 18px;
+      border-radius: 999px;
+      background: var(--rx-k);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 18px 36px -16px rgba(14, 15, 18, 0.7);
+    }
+    .drop-overlay-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--rx-p); box-shadow: 0 0 8px var(--rx-p); }
+
+    /* 모바일: 아래에서 올라오는 창 */
+    @media (max-width: 768px) {
+      #paste-modal { align-items: flex-end; padding: 0; background: rgba(14, 15, 18, 0.4); }
+      .paste-card {
+        max-width: none;
+        max-height: 90vh;
+        padding: 10px 16px 28px;
+        padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+        gap: 16px;
+        border-radius: 28px 28px 0 0;
+        box-shadow: inset 0 1px 0 #fff, 0 -20px 50px -24px rgba(14, 15, 18, 0.5);
+        animation: pasteSheetUp 0.28s cubic-bezier(0.22, 0.8, 0.3, 1);
+      }
+      .paste-grabber { display: block; align-self: center; width: 40px; height: 5px; border-radius: 999px; background: var(--rx-g3); flex-shrink: 0; }
+      .paste-head, .paste-preview-col, .paste-notice, .paste-hint, .paste-btn.primary, .paste-tile-tags { display: none !important; }
+      .paste-mhead { display: flex; align-items: center; gap: 12px; }
+      .paste-mthumb {
+        width: 64px;
+        height: 80px;
+        flex-shrink: 0;
+        object-fit: cover;
+        border-radius: 12px;
+        background: #F3F4F6;
+        box-shadow: 0 8px 18px -10px rgba(14, 15, 18, 0.5);
+      }
+      .paste-mhead-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+      .paste-mhead-text span { font-size: 12px; font-weight: 600; color: var(--rx-sub); letter-spacing: 0; }
+      .paste-body { flex-direction: column; }
+      .paste-tiles { grid-template-columns: 1fr; gap: 8px; }
+      .paste-tile {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        min-height: 64px;
+        padding: 10px 14px;
+        background: #fff;
+      }
+      .paste-tile.on { box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.1); }
+      .paste-tile.on .paste-tile-icon { background: #F3F4F6; color: var(--rx-k); }
+      .paste-tile-icon { width: 40px; height: 40px; border-radius: 12px; }
+      .paste-tile-text { gap: 2px; }
+      .paste-tile-chev { display: block; }
+      .paste-tile:disabled .paste-tile-chev { display: none; }
+      .paste-profile { order: -1; }
+      .paste-card.show-profile:not(.is-chatmode) .paste-profile { display: none; }
+      .paste-card.is-chatmode .paste-profile { display: flex; }
+      .paste-foot { border-top: 0; padding-top: 0; }
+      .paste-actions { flex: 1; }
+      .paste-btn.ghost { flex: 1; height: 50px; font-size: 14px; background: rgba(255, 255, 255, 0.8); }
+    }
+    @keyframes pasteSheetUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #paste-modal, .paste-card { animation: none; }
+    }
   </style>
 </head>
 <body>
@@ -2722,6 +3147,7 @@
           </div>
 
           <button class="fmt-btn" id="fmt-quote" title="인용구 추가/제거" style="font-size: 11.5px;">❝ 인용</button>
+          <button class="fmt-btn" id="fmt-blur" title="검열 — 글자를 흐리게 (Ctrl+Shift+E)" style="font-size: 11.5px;">▒ 검열</button>
 
           <!-- 채팅 모드 전용 퀵 삽입 버튼 -->
           <div id="chat-quick-tools" style="display:none; align-items:center; gap:4px; margin-left:auto;">
@@ -2827,6 +3253,8 @@
           <button data-theme="kakao" class="on">메신저</button>
           <button data-theme="discord">타임라인</button>
           <button data-theme="terminal">단말기</button>
+          <button data-theme="game">게임</button>
+          <button data-theme="script">대본</button>
         </div>
       </div>
       <div class="panel-divider"></div>
@@ -2998,6 +3426,11 @@
           <button data-font="Pretendard" class="on">프리텐다드</button>
           <button data-font="Noto Serif KR">노토 세리프</button>
         </div>
+        <label class="file-dropzone font-dropzone" for="in-font-file">
+          <span>＋ 내 폰트 추가 (ttf · otf · woff · woff2)</span>
+          <input type="file" id="in-font-file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" multiple style="display:none;">
+        </label>
+        <span class="font-missing-hint" id="font-missing-hint" style="display:none;"></span>
       </div>
 
       <div class="field-group">
@@ -3429,6 +3862,105 @@
   <button type="button" class="preset-fab-btn" id="btn-open-preset">
     <span>프리셋 보관함</span>
   </button>
+
+  <!-- 이미지 끌어다 놓기 안내 -->
+  <div id="drop-overlay" aria-hidden="true">
+    <div class="drop-overlay-inner">
+      <div class="drop-overlay-pill"><i></i>사진 넣기</div>
+    </div>
+  </div>
+
+  <!-- 이미지 붙여넣기: 넣을 곳 고르기 창 -->
+  <div id="paste-modal" aria-hidden="true">
+    <div class="paste-card" id="paste-card" role="dialog" aria-modal="true" aria-label="이미지 삽입 선택">
+      <div class="paste-grabber" aria-hidden="true"></div>
+
+      <div class="paste-head">
+        <div class="paste-head-left">
+          <span class="paste-chip"><i></i><span id="paste-chip-text">Ctrl + V</span></span>
+          <h2 class="paste-title" id="paste-title">이미지 삽입 선택</h2>
+        </div>
+        <button type="button" class="paste-close" id="btn-paste-close" aria-label="닫기">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+
+      <!-- 모바일 머리 -->
+      <div class="paste-mhead">
+        <img class="paste-mthumb" id="paste-mthumb" alt="">
+        <div class="paste-mhead-text">
+          <h2 class="paste-title" id="paste-mtitle">이미지 삽입 선택</h2>
+          <span id="paste-mmeta"></span>
+        </div>
+      </div>
+
+      <div class="paste-body">
+        <div class="paste-preview-col" id="paste-preview-col">
+          <div class="paste-preview" id="paste-preview"></div>
+          <div class="paste-thumbs" id="paste-thumbs"></div>
+          <div class="paste-meta">
+            <span class="paste-meta-label" id="paste-meta-label">붙여넣은 이미지</span>
+            <span class="paste-meta-info" id="paste-meta-info"></span>
+          </div>
+        </div>
+
+        <div class="paste-right">
+          <div class="paste-tiles" id="paste-tiles">
+            <button type="button" class="paste-tile" data-target="bg">
+              <span class="paste-tile-tags"><span class="paste-tile-badge">채팅 모드 추천</span><span class="paste-tile-key">1</span></span>
+              <span class="paste-tile-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path><circle cx="16" cy="9" r="1.6"></circle></svg>
+              </span>
+              <span class="paste-tile-text"><span class="paste-tile-name">카드 배경</span><span class="paste-tile-desc"></span></span>
+              <svg class="paste-tile-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+            <button type="button" class="paste-tile" data-target="chat">
+              <span class="paste-tile-tags"><span class="paste-tile-badge">채팅 모드 추천</span><span class="paste-tile-key">2</span></span>
+              <span class="paste-tile-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"></path><path d="M7 14l3-3 2 2 2-2 3 3"></path></svg>
+              </span>
+              <span class="paste-tile-text"><span class="paste-tile-name">사진 말풍선</span><span class="paste-tile-desc"></span></span>
+              <svg class="paste-tile-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+            <button type="button" class="paste-tile" data-target="sticker">
+              <span class="paste-tile-tags"><span class="paste-tile-badge">채팅 모드 추천</span><span class="paste-tile-key">3</span></span>
+              <span class="paste-tile-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7l-7 7H6a2 2 0 0 1-2-2z"></path><path d="M13 20v-5a2 2 0 0 1 2-2h5"></path><path d="M9 10h.01M14 10h.01"></path></svg>
+              </span>
+              <span class="paste-tile-text"><span class="paste-tile-name">스티커</span><span class="paste-tile-desc"></span></span>
+              <svg class="paste-tile-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+            <button type="button" class="paste-tile" data-target="insert">
+              <span class="paste-tile-tags"><span class="paste-tile-badge">채팅 모드 추천</span><span class="paste-tile-key">4</span></span>
+              <span class="paste-tile-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2.5"></rect><rect x="7" y="6" width="10" height="6" rx="1.5"></rect><path d="M7 15.5h10M7 18h6"></path></svg>
+              </span>
+              <span class="paste-tile-text"><span class="paste-tile-name">본문 이미지</span><span class="paste-tile-desc"></span></span>
+              <svg class="paste-tile-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+
+          <div class="paste-profile">
+            <span class="paste-profile-label">이미지가 들어갈 말풍선 선택</span>
+            <div class="paste-profile-seg" id="paste-profile-seg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="paste-notice" id="paste-notice">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+        <span id="paste-notice-text"></span>
+      </div>
+
+      <div class="paste-foot">
+        <span class="paste-hint" id="paste-hint"></span>
+        <div class="paste-actions">
+          <button type="button" class="paste-btn ghost" id="btn-paste-cancel">취소</button>
+          <button type="button" class="paste-btn primary paste-apply" id="btn-paste-apply"><i></i><span id="paste-apply-text">넣기</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- 프리셋 관리 모달 창 -->
   <!-- HTML 배경 예시 설정 창 -->
@@ -3911,7 +4443,7 @@
             b.classList.toggle('on', b.dataset[attr] === currentVal);
           });
         };
-        syncGroup('font-group', 'font', state.font);
+        syncFontUI();
         syncGroup('valign-group', 'valign', state.vAlign || 'middle');
         
         // 카드 비율 상태 복원 (메인 + 추가 비율 통합 동기화)
@@ -4098,12 +4630,617 @@
       state.insertPosY = Math.max(-maxY, Math.min(maxY, state.insertPosY));
     }
 
+    // 한 조각의 글자들을 그리기. blur면 네모난 검열 상자로
+    // (모든 기기에서 같은 모양이 나오도록 캔버스 filter 대신 작게 줄였다가 키우는 방식으로 흐림)
+    const blurWorkCanvas = document.createElement('canvas');
+    const blurStepCanvas = document.createElement('canvas');
+    const blurSmallCanvas = document.createElement('canvas');
+
+    function drawRunChars(chars, x, y, blur, fs, prevRun, nextRun) {
+      const drawAt = (c2, ox, oy) => {
+        let cx = ox;
+        for (let c = 0; c < chars.length; c++) {
+          const ch = chars[c];
+          c2.fillText(ch, cx, oy);
+          cx += ctx.measureText(ch).width + state.letterSpacing;
+        }
+      };
+      if (!blur) { drawAt(ctx, x, y); return; }
+
+      let w = 0;
+      chars.forEach(ch => { w += ctx.measureText(ch).width + state.letterSpacing; });
+      if (w <= 0) return;
+
+      // 앞뒤 조각도 검열이면 상자를 이어 붙임 (||**김**윳|| 처럼 안에 서식이 섞여도 한 상자)
+      const joinL = !!(prevRun && prevRun.blur);
+      const joinR = !!(nextRun && nextRun.blur);
+      const pad = Math.max(2, fs * 0.1);
+      const boxX = x - (joinL ? 0 : pad);
+      const boxW = w + (joinL ? 0 : pad) + (joinR ? 0 : pad);
+      const boxH = fs * 1.2;
+      const boxY = y - boxH / 2;
+      const rad = Math.max(2, fs * 0.14);
+      const radii = [joinL ? 0 : rad, joinR ? 0 : rad, joinR ? 0 : rad, joinL ? 0 : rad];
+      const baseAlpha = ctx.globalAlpha;
+
+      // 1) 글자를 따로 그려두기
+      const W = Math.ceil(boxW), H = Math.ceil(boxH);
+      blurWorkCanvas.width = W;
+      blurWorkCanvas.height = H;
+      const wc = blurWorkCanvas.getContext('2d');
+      wc.font = ctx.font;
+      wc.fillStyle = ctx.fillStyle;
+      wc.textBaseline = 'middle';
+      wc.textAlign = 'left';
+      drawAt(wc, x - boxX, y - boxY);
+
+      // 2) 반씩 줄여가며 아주 작게 → 3) 상자 크기로 다시 키우면 매끈하게 흐려짐
+      const target = Math.max(6, fs * 0.7); // 클수록 더 흐림
+      const sw = Math.max(2, Math.round(W / target));
+      const sh = Math.max(2, Math.round(H / target));
+      let src = blurWorkCanvas, cw = W, chh = H;
+      let flip = false;
+      while (cw / 2 > sw && chh / 2 > sh) {
+        const dst = flip ? blurSmallCanvas : blurStepCanvas;
+        const nw = Math.max(sw, Math.round(cw / 2)), nh = Math.max(sh, Math.round(chh / 2));
+        dst.width = nw; dst.height = nh;
+        const dc = dst.getContext('2d');
+        dc.imageSmoothingEnabled = true;
+        dc.imageSmoothingQuality = 'high';
+        dc.drawImage(src, 0, 0, cw, chh, 0, 0, nw, nh);
+        src = dst; cw = nw; chh = nh; flip = !flip;
+      }
+      if (cw !== sw || chh !== sh) {
+        const dst = flip ? blurSmallCanvas : blurStepCanvas;
+        dst.width = sw; dst.height = sh;
+        const dc = dst.getContext('2d');
+        dc.imageSmoothingEnabled = true;
+        dc.imageSmoothingQuality = 'high';
+        dc.drawImage(src, 0, 0, cw, chh, 0, 0, sw, sh);
+        src = dst; cw = sw; chh = sh;
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, radii);
+      else ctx.rect(boxX, boxY, boxW, boxH);
+      ctx.clip();
+
+      // 바탕: 글자색을 옅게 깔아서 상자 모양이 또렷하게
+      ctx.globalAlpha = baseAlpha * 0.18;
+      ctx.fillRect(boxX - 1, boxY - 1, boxW + 2, boxH + 2);
+
+      ctx.globalAlpha = baseAlpha * 0.45;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(src, 0, 0, cw, chh, boxX, boxY, boxW, boxH);
+      ctx.restore();
+    }
+
+    // ==========================================
+    // 채팅 테마: 게임 / 대본
+    // - 채팅 모드와 일반 모드에서 같이 씀
+    // - 색: 글자·테두리 = 글자 색상(state.ink), 이름표·띠 = 프로필 말풍선색
+    // ==========================================
+    const CUSTOM_CHAT_THEMES = ['game', 'script'];
+    function isCustomChatTheme(t) { return CUSTOM_CHAT_THEMES.includes(t); }
+
+    function colorLum(hex) {
+      let c = String(hex || '#000000').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const n = parseInt(c.slice(0, 6), 16);
+      if (isNaN(n)) return 0;
+      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    }
+    function colorContrast(a, b) {
+      const la = colorLum(a), lb = colorLum(b);
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+
+    // 카드 글자색이 밝으면(어두운 배경) 상자도 어둡게
+    function themePalette() {
+      const dark = colorLum(state.ink) > 0.5;
+      return {
+        dark,
+        ink: state.ink,
+        boxSolid: dark ? '#14161f' : '#ffffff',
+        boxFill: dark ? 'rgba(20, 22, 31, 0.9)' : 'rgba(255, 255, 255, 0.94)'
+      };
+    }
+
+    function themeFontFam() { return getFontFamily(state.font); }
+
+    // 서식 런 한 줄 그리기 (형광펜·글자색·밑줄·취소선·검열 포함)
+    function drawRunsLine(runs, x, cy, fs, color, alpha = 1) {
+      let curX = x;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      runs.forEach((run, rIdx) => {
+        ctx.font = run.fontStr;
+        if (run.mark) {
+          const prev = runs[rIdx - 1], next = runs[rIdx + 1];
+          const mc = (run.markColor || '#ffeb3b').toLowerCase();
+          const pc = prev && prev.mark && (prev.markColor || '#ffeb3b').toLowerCase() === mc;
+          const nc = next && next.mark && (next.markColor || '#ffeb3b').toLowerCase() === mc;
+          ctx.fillStyle = hexToRgba(run.markColor || '#ffeb3b', 0.48 * alpha);
+          ctx.fillRect(pc ? curX : curX - 1, cy - fs * 0.55, run.width + (pc ? 0 : 1) + (nc ? 0 : 1), fs * 1.15);
+        }
+        const col = hexToRgba(run.textColor || color, alpha);
+        ctx.fillStyle = col;
+        drawRunChars(splitGraphemes(run.text), curX, cy, run.blur, fs, runs[rIdx - 1], runs[rIdx + 1]);
+        if (run.strike || run.underline) {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = Math.max(1.2, fs * 0.08);
+          ctx.beginPath();
+          if (run.strike) { ctx.moveTo(curX, cy); ctx.lineTo(curX + run.width, cy); }
+          if (run.underline) { ctx.moveTo(curX, cy + fs * 0.52); ctx.lineTo(curX + run.width, cy + fs * 0.52); }
+          ctx.stroke();
+        }
+        curX += run.width;
+      });
+    }
+
+    function drawSpacedText(text, x, y, spacing) {
+      let cx = x;
+      for (const ch of text) {
+        ctx.fillText(ch, cx, y);
+        cx += ctx.measureText(ch).width + spacing;
+      }
+      return cx - spacing;
+    }
+    function measureSpacedText(text, spacing) {
+      let w = 0;
+      for (const ch of text) w += ctx.measureText(ch).width + spacing;
+      return Math.max(0, w - spacing);
+    }
+
+    function drawSquareAvatar(img, x, y, size, strokeColor, strokeW) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, size, size);
+      ctx.clip();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      if (img) {
+        const r = img.width / img.height;
+        let sw, sh, sx, sy;
+        if (r > 1) { sh = img.height; sw = sh; sx = (img.width - sw) / 2; sy = 0; }
+        else { sw = img.width; sh = sw; sx = 0; sy = (img.height - sh) / 2; }
+        ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
+      } else {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size * 0.4, size * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size * 0.95, size * 0.36, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      if (strokeW > 0) {
+        ctx.save();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeW;
+        ctx.strokeRect(x + strokeW / 2, y + strokeW / 2, size - strokeW, size - strokeW);
+        ctx.restore();
+      }
+    }
+
+    function textBlockHeight(lineCount, fs, step) {
+      return lineCount > 0 ? lineCount * fs + (lineCount - 1) * (step - fs) : 0;
+    }
+
+    // ---------- 게임 ----------
+    function layoutGameMsg(prof, pIdx, text, trans, fs, W) {
+      const av = prof.showAvatar ? Math.round(fs * 2.7) : 0;
+      const bw = Math.max(1.5, fs * 0.06);
+      const padX = fs * 0.9;
+      const padY = fs * 0.78;
+      const stripeW = Math.max(3, fs * 0.17);
+      const stripeIn = Math.max(4, fs * 0.22);
+      const gap = av ? fs * 0.7 : 0;
+      const plateFs = Math.max(11, fs * 0.6);
+      const plateH = Math.round(plateFs * 1.7);
+      const plateOver = plateH * 0.6;
+      const shadow = Math.max(3, fs * 0.18);
+      const textMaxW = Math.max(fs * 3, W - bw * 2 - padX * 1.75 - stripeIn - stripeW - av - gap);
+      const step = fs * 1.38;
+
+      const chatImage = findChatImage(text);
+      let lines = [], transLines = [], imgW = 0, imgH = 0, textH = 0;
+      const transFs = Math.max(11, Math.round(fs * 0.78));
+      const transStep = transFs * 1.38;
+      const transGap = fs * 0.28;
+
+      if (chatImage) {
+        const sz = chatImageSize(chatImage, fs, Math.min(textMaxW, W * 0.5));
+        imgW = sz.w; imgH = sz.h; textH = imgH;
+      } else {
+        lines = tokenizeRunsToLines(text, fs, state.font, state.letterSpacing, textMaxW);
+        textH = textBlockHeight(lines.length, fs, step);
+        if (trans !== null && trans !== undefined) {
+          transLines = tokenizeRunsToLines(trans, transFs, state.font, state.letterSpacing, textMaxW);
+          textH += transGap + textBlockHeight(transLines.length, transFs, transStep);
+        }
+      }
+
+      const boxH = Math.max(textH, av) + padY * 2 + bw * 2;
+      return {
+        kind: 'game', prof, pIdx, fs, lines, transLines, transFs, transGap, step, transStep,
+        chatImage, imgW, imgH, textH, av, bw, padX, padY, stripeW, stripeIn, gap,
+        plateFs, plateH, plateOver, shadow, boxH,
+        h: plateOver + boxH + shadow
+      };
+    }
+
+    function drawGameMsg(b, x, y, W, isLast) {
+      const P = themePalette();
+      const prof = b.prof;
+      const isRight = prof.align === 'right';
+      const fs = b.fs;
+      const top = y + b.plateOver;
+      const accent = prof.bubbleBg || P.ink;
+      const accentVis = colorContrast(accent, P.boxSolid) < 1.35 ? P.ink : accent;
+
+      ctx.save();
+      // 납작한 그림자
+      ctx.fillStyle = P.dark ? 'rgba(0,0,0,0.35)' : hexToRgba(P.ink, 0.12);
+      ctx.fillRect(x + (isRight ? b.shadow : -b.shadow), top + b.shadow, W, b.boxH);
+      // 상자
+      ctx.fillStyle = P.boxFill;
+      ctx.fillRect(x, top, W, b.boxH);
+      ctx.strokeStyle = P.ink;
+      ctx.lineWidth = b.bw;
+      ctx.strokeRect(x + b.bw / 2, top + b.bw / 2, W - b.bw, b.boxH - b.bw);
+      // 말하는 쪽 띠 (은은하게)
+      ctx.save();
+      ctx.globalAlpha = accentVis === accent ? 0.55 : 0.25;
+      ctx.fillStyle = accentVis;
+      ctx.fillRect(isRight ? x + W - b.stripeIn - b.stripeW : x + b.stripeIn, top + b.stripeIn, b.stripeW, b.boxH - b.stripeIn * 2);
+      ctx.restore();
+      // 대각선 꺾쇠
+      const cs = fs * 0.38, co = fs * 0.27;
+      ctx.beginPath();
+      ctx.moveTo(x - co, top - co + cs); ctx.lineTo(x - co, top - co); ctx.lineTo(x - co + cs, top - co);
+      ctx.moveTo(x + W + co - cs, top + b.boxH + co); ctx.lineTo(x + W + co, top + b.boxH + co); ctx.lineTo(x + W + co, top + b.boxH + co - cs);
+      ctx.stroke();
+
+      // 이름표: [1P][이름]
+      const idxText = `${(b.pIdx || 0) + 1}P`;
+      const fam = themeFontFam();
+      ctx.font = `800 ${Math.round(b.plateFs * 0.78)}px ${fam}`;
+      const idxW = ctx.measureText(idxText).width + b.plateFs * 0.7;
+      ctx.font = `900 ${b.plateFs}px ${fam}`;
+      const nameText = prof.name || `P${(b.pIdx || 0) + 1}`;
+      const nameW = ctx.measureText(nameText).width + b.plateFs * 1.6;
+      const plateW = idxW + nameW;
+      const plateX = isRight ? x + W - fs * 0.9 - plateW : x + fs * 0.9;
+      const plateY = y;
+      ctx.fillStyle = P.ink;
+      ctx.fillRect(plateX - b.bw, plateY - b.bw, plateW + b.bw * 2, b.plateH + b.bw * 2);
+      ctx.fillStyle = accent;
+      ctx.fillRect(plateX + idxW, plateY, nameW, b.plateH);
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = `800 ${Math.round(b.plateFs * 0.78)}px ${fam}`;
+      ctx.fillStyle = colorContrast(accent, P.ink) >= 3 ? accent : P.boxSolid;
+      ctx.fillText(idxText, plateX + idxW / 2, plateY + b.plateH / 2);
+      ctx.font = `900 ${b.plateFs}px ${fam}`;
+      ctx.fillStyle = prof.textColor || P.ink;
+      ctx.fillText(nameText, plateX + idxW + nameW / 2, plateY + b.plateH / 2);
+      ctx.textAlign = 'left';
+
+      // 내용 영역
+      const innerL = x + b.bw + (isRight ? b.padX : b.stripeIn + b.stripeW + b.padX * 0.75);
+      const innerR = x + W - b.bw - (isRight ? b.stripeIn + b.stripeW + b.padX * 0.75 : b.padX);
+      if (b.av) {
+        const avX = isRight ? innerR - b.av : innerL;
+        drawSquareAvatar(prof.avatarImg, avX, top + (b.boxH - b.av) / 2, b.av, P.ink, b.bw);
+      }
+      const tx0 = isRight ? innerL : innerL + b.av + b.gap;
+      const tx1 = isRight ? innerR - b.av - b.gap : innerR;
+      let cy = top + (b.boxH - b.textH) / 2;
+
+      if (b.chatImage) {
+        drawChatImageBubble(b.chatImage, isRight ? tx1 - b.imgW : tx0, cy, b.imgW, b.imgH, true, 0);
+      } else {
+        cy += fs / 2;
+        b.lines.forEach(l => {
+          drawRunsLine(l.runs, isRight ? tx1 - l.width : tx0, cy, fs, P.ink, 1);
+          cy += b.step;
+        });
+        if (b.transLines.length) {
+          cy = cy - b.step + fs / 2 + b.transGap + b.transFs / 2;
+          b.transLines.forEach(l => {
+            drawRunsLine(l.runs, isRight ? tx1 - l.width : tx0, cy, b.transFs, P.ink, 0.62);
+            cy += b.transStep;
+          });
+        }
+      }
+
+      // 마지막 대사: NEXT ▼
+      if (isLast) {
+        const nfs = Math.max(9, fs * 0.4);
+        ctx.font = `800 ${nfs}px ${fam}`;
+        ctx.fillStyle = P.ink;
+        ctx.textBaseline = 'middle';
+        const sp = nfs * 0.14;
+        const triW = nfs * 1.1;
+        const textW = measureSpacedText('NEXT', sp);
+        const endX = (isRight ? x + W - b.stripeIn - b.stripeW - fs * 0.35 : x + W - b.bw - fs * 0.55);
+        const ny = top + b.boxH - b.bw - nfs * 1.1;
+        drawSpacedText('NEXT', endX - triW - nfs * 0.45 - textW, ny, sp);
+        ctx.beginPath();
+        ctx.moveTo(endX - triW, ny - triW * 0.4);
+        ctx.lineTo(endX, ny - triW * 0.4);
+        ctx.lineTo(endX - triW / 2, ny + triW * 0.45);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function layoutGameLine(type, text, fs, W, chapterNo) {
+      const lfs = Math.max(11, fs * 0.6);
+      if (type === 'date') {
+        const runs = (tokenizeRunsToLines(text, lfs, state.font, state.letterSpacing, W * 0.5)[0] || { runs: [], width: 0 });
+        return { kind: 'gameDate', fs, lfs, line: runs, chapterNo, h: lfs * 2.1, gapAfter: fs * 0.65 };
+      }
+      const tagW = lfs * 4.9;
+      const lines = tokenizeRunsToLines(text, lfs, state.font, state.letterSpacing, Math.max(lfs * 4, W * 0.72 - tagW));
+      const h = Math.max(lfs * 1.9, textBlockHeight(lines.length, lfs, lfs * 1.4) + lfs * 0.9);
+      return { kind: 'gameSystem', fs, lfs, lines, h, gapAfter: fs * 0.65 };
+    }
+
+    function drawGameLine(b, x, y, W) {
+      const P = themePalette();
+      const fam = themeFontFam();
+      const lfs = b.lfs;
+      const lw = Math.max(1.5, b.fs * 0.06);
+      const cy = y + b.h / 2;
+      ctx.save();
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+
+      if (b.kind === 'gameDate') {
+        // [CH.01 | 날짜]
+        const badge = `CH.${String(b.chapterNo).padStart(2, '0')}`;
+        ctx.font = `900 ${lfs}px ${fam}`;
+        const bsp = lfs * 0.08;
+        const badgeW = measureSpacedText(badge, bsp) + lfs * 1.2;
+        const dateW = b.line.width + lfs * 1.6;
+        const ph = lfs * 1.9;
+        const py = cy - ph / 2;
+        ctx.fillStyle = P.ink;
+        ctx.fillRect(x - lw, py - lw, badgeW + dateW + lw * 2, ph + lw * 2);
+        ctx.fillStyle = P.boxSolid;
+        ctx.fillRect(x + badgeW, py, dateW, ph);
+        ctx.fillStyle = P.boxSolid;
+        ctx.font = `900 ${lfs}px ${fam}`;
+        drawSpacedText(badge, x + lfs * 0.6, cy, bsp);
+        drawRunsLine(b.line.runs, x + badgeW + lfs * 0.8, cy, lfs, P.ink, 1);
+
+        // 오른쪽 장식 버튼 AUTO SKIP LOG
+        const bfs = lfs * 0.68;
+        ctx.font = `800 ${bfs}px ${fam}`;
+        const sp = bfs * 0.1;
+        const labels = ['AUTO', 'SKIP', 'LOG'];
+        const bh = lfs * 1.45;
+        const widths = labels.map(t => measureSpacedText(t, sp) + bfs * 1.1);
+        const bgap = lfs * 0.3;
+        const totalBW = widths.reduce((a, c) => a + c, 0) + bgap * (labels.length - 1);
+        let bx = x + W - totalBW;
+        const btnStart = bx;
+        labels.forEach((t, i) => {
+          const last = i === labels.length - 1;
+          ctx.fillStyle = last ? P.ink : P.boxFill;
+          ctx.fillRect(bx, cy - bh / 2, widths[i], bh);
+          ctx.strokeStyle = P.ink;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(bx + 0.5, cy - bh / 2 + 0.5, widths[i] - 1, bh - 1);
+          ctx.fillStyle = last ? P.boxSolid : P.ink;
+          ctx.font = `${last ? 900 : 800} ${bfs}px ${fam}`;
+          drawSpacedText(t, bx + bfs * 0.55, cy, sp);
+          bx += widths[i] + bgap;
+        });
+
+        // 가운데 선 + 마름모
+        const lx0 = x + badgeW + dateW + lfs * 0.8;
+        const dsz = lfs * 0.36;
+        const lx1 = btnStart - lfs * 0.8 - dsz * 1.6;
+        if (lx1 > lx0) {
+          ctx.strokeStyle = hexToRgba(P.ink, 0.45);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(lx0, cy + 0.5);
+          ctx.lineTo(lx1, cy + 0.5);
+          ctx.stroke();
+          ctx.save();
+          ctx.translate(lx1 + dsz * 1.1, cy);
+          ctx.rotate(Math.PI / 4);
+          ctx.fillStyle = P.ink;
+          ctx.fillRect(-dsz / 2, -dsz / 2, dsz, dsz);
+          ctx.restore();
+        }
+      } else {
+        // [SYSTEM 알림 문구] + 양옆 선
+        const tfs = lfs * 0.78;
+        ctx.font = `900 ${tfs}px ${fam}`;
+        const sp = tfs * 0.1;
+        const tagTextW = measureSpacedText('SYSTEM', sp);
+        const tagW = tagTextW + tfs * 1.0;
+        const tagH = tfs * 1.75;
+        const textW = Math.max(0, ...b.lines.map(l => l.width));
+        const innerGap = lfs * 0.6;
+        const boxW = lfs * 0.3 + tagW + innerGap + textW + lfs * 0.9;
+        const boxX = x + (W - boxW) / 2;
+        const boxY = y;
+        ctx.fillStyle = P.dark ? 'rgba(20,22,31,0.85)' : 'rgba(255,255,255,0.85)';
+        ctx.fillRect(boxX, boxY, boxW, b.h);
+        ctx.strokeStyle = hexToRgba(P.ink, 0.35);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, b.h - 1);
+        ctx.fillStyle = P.ink;
+        ctx.fillRect(boxX + lfs * 0.3, cy - tagH / 2, tagW, tagH);
+        ctx.fillStyle = P.boxSolid;
+        drawSpacedText('SYSTEM', boxX + lfs * 0.3 + tfs * 0.5, cy, sp);
+        const step = lfs * 1.4;
+        let ly = cy - textBlockHeight(b.lines.length, lfs, step) / 2 + lfs / 2;
+        b.lines.forEach(l => {
+          drawRunsLine(l.runs, boxX + lfs * 0.3 + tagW + innerGap, ly, lfs, P.ink, 0.88);
+          ly += step;
+        });
+        // 양옆 선 (가운데로 갈수록 진하게)
+        const gl = lfs * 0.8;
+        const leftEnd = boxX - gl, rightStart = boxX + boxW + gl;
+        if (leftEnd > x) {
+          const g1 = ctx.createLinearGradient(x, 0, leftEnd, 0);
+          g1.addColorStop(0, hexToRgba(P.ink, 0));
+          g1.addColorStop(1, hexToRgba(P.ink, 0.5));
+          ctx.fillStyle = g1;
+          ctx.fillRect(x, cy, leftEnd - x, 1);
+          const g2 = ctx.createLinearGradient(rightStart, 0, x + W, 0);
+          g2.addColorStop(0, hexToRgba(P.ink, 0.5));
+          g2.addColorStop(1, hexToRgba(P.ink, 0));
+          ctx.fillStyle = g2;
+          ctx.fillRect(rightStart, cy, x + W - rightStart, 1);
+        }
+      }
+      ctx.restore();
+    }
+
+    // ---------- 대본 ----------
+    function scriptNameColW(fs, W) {
+      ctx.font = `900 ${fs}px ${themeFontFam()}`;
+      let w = fs * 1.5;
+      state.profiles.forEach((p, i) => {
+        w = Math.max(w, ctx.measureText(p.name || `P${i + 1}`).width);
+      });
+      return Math.min(w, W * 0.28);
+    }
+
+    function layoutScriptMsg(prof, pIdx, text, trans, fs, W) {
+      const nameColW = scriptNameColW(fs, W);
+      const colGap = fs * 0.9;
+      const textMaxW = Math.max(fs * 3, W - nameColW - colGap);
+      const step = fs * 1.55;
+      const transFs = Math.max(11, Math.round(fs * 0.8));
+      const transStep = transFs * 1.55;
+      const transGap = fs * 0.12;
+      const chatImage = findChatImage(text);
+      let lines = [], transLines = [], imgW = 0, imgH = 0, h;
+      if (chatImage) {
+        const sz = chatImageSize(chatImage, fs, Math.min(textMaxW, W * 0.5));
+        imgW = sz.w; imgH = sz.h;
+        h = Math.max(step, imgH);
+      } else {
+        lines = tokenizeRunsToLines(text, fs, state.font, state.letterSpacing, textMaxW);
+        h = lines.length * step;
+        if (trans !== null && trans !== undefined) {
+          transLines = tokenizeRunsToLines(trans, transFs, state.font, state.letterSpacing, textMaxW);
+          h += transGap + transLines.length * transStep;
+        }
+      }
+      return { kind: 'script', prof, pIdx, fs, nameColW, colGap, step, lines, transLines, transFs, transStep, transGap, chatImage, imgW, imgH, h };
+    }
+
+    function drawScriptMsg(b, x, y) {
+      const P = themePalette();
+      const fam = themeFontFam();
+      const fs = b.fs;
+      ctx.save();
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'right';
+      ctx.font = `900 ${fs}px ${fam}`;
+      ctx.fillStyle = P.ink;
+      const nameText = b.prof.name || `P${(b.pIdx || 0) + 1}`;
+      // 이름이 칸보다 길면 줄여서 맞추기
+      const nw = ctx.measureText(nameText).width;
+      if (nw > b.nameColW) {
+        ctx.save();
+        ctx.translate(x + b.nameColW, y + b.step / 2);
+        ctx.scale(b.nameColW / nw, 1);
+        ctx.fillText(nameText, 0, 0);
+        ctx.restore();
+      } else {
+        ctx.fillText(nameText, x + b.nameColW, y + b.step / 2);
+      }
+      ctx.textAlign = 'left';
+      const tx = x + b.nameColW + b.colGap;
+      if (b.chatImage) {
+        drawChatImageBubble(b.chatImage, tx, y + (b.step - fs) / 2, b.imgW, b.imgH, false, Math.max(4, fs * 0.25));
+      } else {
+        let cy = y + b.step / 2;
+        b.lines.forEach(l => { drawRunsLine(l.runs, tx, cy, fs, P.ink, 1); cy += b.step; });
+        if (b.transLines.length) {
+          cy = cy - b.step / 2 + b.transGap + b.transStep / 2;
+          b.transLines.forEach(l => { drawRunsLine(l.runs, tx, cy, b.transFs, P.ink, 0.6); cy += b.transStep; });
+        }
+      }
+      ctx.restore();
+    }
+
+    function layoutScriptLine(type, text, fs, W, sceneNo) {
+      if (type === 'date') {
+        const dfs = fs * 0.85;
+        const line = tokenizeRunsToLines(text, dfs, state.font, state.letterSpacing, W * 0.8)[0] || { runs: [], width: 0 };
+        return { kind: 'scriptDate', fs, dfs, line, sceneNo, h: fs * 2.0, gapAfter: fs * 0.95 };
+      }
+      const nameColW = scriptNameColW(fs, W);
+      const indent = nameColW + fs * 0.9;
+      const sfs = fs * 0.85;
+      const step = sfs * 1.6;
+      const lines = tokenizeRunsToLines(`*(${text})*`, sfs, state.font, state.letterSpacing, Math.max(sfs * 4, W - indent));
+      return { kind: 'scriptSystem', fs, sfs, step, indent, lines, h: lines.length * step, gapAfter: fs * 0.8 };
+    }
+
+    function drawScriptLine(b, x, y, W) {
+      const P = themePalette();
+      const fam = themeFontFam();
+      ctx.save();
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      if (b.kind === 'scriptDate') {
+        const cy = y + b.h * 0.42;
+        const tfs = b.fs * 1.05;
+        ctx.font = `900 ${tfs}px ${fam}`;
+        ctx.fillStyle = P.ink;
+        const label = `S#${b.sceneNo}.`;
+        ctx.fillText(label, x, cy);
+        const lw = ctx.measureText(label).width;
+        drawRunsLine(b.line.runs, x + lw + b.fs * 0.6, cy + (tfs - b.dfs) * 0.12, b.dfs, P.ink, 1);
+        ctx.fillStyle = hexToRgba(P.ink, 0.25);
+        ctx.fillRect(x, y + b.h - 1, W, 1);
+      } else {
+        let cy = y + b.step / 2;
+        b.lines.forEach(l => { drawRunsLine(l.runs, x + b.indent, cy, b.sfs, P.ink, 0.62); cy += b.step; });
+      }
+      ctx.restore();
+    }
+
+    // 공통 입구
+    function layoutThemeMsg(theme, prof, pIdx, text, trans, fs, W) {
+      return theme === 'game' ? layoutGameMsg(prof, pIdx, text, trans, fs, W) : layoutScriptMsg(prof, pIdx, text, trans, fs, W);
+    }
+    function drawThemeBlock(b, x, y, W, isLast) {
+      if (b.kind === 'game') drawGameMsg(b, x, y, W, isLast);
+      else if (b.kind === 'script') drawScriptMsg(b, x, y);
+      else if (b.kind === 'gameDate' || b.kind === 'gameSystem') drawGameLine(b, x, y, W);
+      else drawScriptLine(b, x, y, W);
+    }
+
     // 중첩 재귀 마크다운 파서 (형광펜 + 밑줄 동시 중첩 완벽 지원)
     // 중첩 재귀 마크다운 파서 (그룹 인덱스 밀림 문제 완전 해결)
-    function parseFormattedText(text, currentStyle = { bold: false, italic: false, underline: false, strike: false, mark: false, markColor: null, textColor: null }) {
+    function parseFormattedText(text, currentStyle = { bold: false, italic: false, underline: false, strike: false, mark: false, markColor: null, textColor: null, blur: false }) {
       if (!text) return [];
       const tokens = [];
-      const pattern = /\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)\}\}|==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|__([\s\S]*?)__|(\*\*\*[\s\S]*?\*\*\*|\*\*[\s\S]*?\*\*|\*[\s\S]*?\*|~~[\s\S]*?~~)/g;
+      const pattern = /\|\|([\s\S]+?)\|\||\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)\}\}|==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==|__([\s\S]*?)__|(\*\*\*[\s\S]*?\*\*\*|\*\*[\s\S]*?\*\*|\*[\s\S]*?\*|~~[\s\S]*?~~)/g;
       
       let lastIndex = 0;
       let match;
@@ -4115,7 +5252,10 @@
         }
 
         const full = match[0];
-        if (full.startsWith('{{')) {
+        if (full.startsWith('||')) {
+          // ||검열|| → 흐리게
+          tokens.push(...parseFormattedText(full.slice(2, -2), { ...currentStyle, blur: true }));
+        } else if (full.startsWith('{{')) {
           const colorMatch = full.match(/^\{\{(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*)\}\}$/);
           const color = (colorMatch && colorMatch[1]) ? colorMatch[1] : (state.textColor || '#51aae1');
           const inner = colorMatch ? colorMatch[2] : full.slice(2, -2);
@@ -4192,7 +5332,8 @@
               curLineRuns[curLineRuns.length - 1].strike === tok.strike &&
               curLineRuns[curLineRuns.length - 1].mark === tok.mark &&
               curLineRuns[curLineRuns.length - 1].markColor === tok.markColor &&
-              curLineRuns[curLineRuns.length - 1].textColor === tok.textColor) { // ← 추가
+              curLineRuns[curLineRuns.length - 1].textColor === tok.textColor &&
+              curLineRuns[curLineRuns.length - 1].blur === tok.blur) {
             curLineRuns[curLineRuns.length - 1].text += ch;
             curLineRuns[curLineRuns.length - 1].width += chW;
           } else {
@@ -4205,6 +5346,7 @@
               mark: tok.mark,
               markColor: tok.markColor,
               textColor: tok.textColor,
+              blur: !!tok.blur,
               width: chW,
               fontStr
             });
@@ -4298,7 +5440,8 @@
               curLineRuns[curLineRuns.length - 1].strike === tok.strike &&
               curLineRuns[curLineRuns.length - 1].mark === tok.mark &&
               curLineRuns[curLineRuns.length - 1].markColor === tok.markColor &&
-              curLineRuns[curLineRuns.length - 1].textColor === tok.textColor) {
+              curLineRuns[curLineRuns.length - 1].textColor === tok.textColor &&
+              curLineRuns[curLineRuns.length - 1].blur === tok.blur) {
             curLineRuns[curLineRuns.length - 1].text += ch;
             curLineRuns[curLineRuns.length - 1].width += chW;
           } else {
@@ -4311,6 +5454,7 @@
               mark: tok.mark,
               markColor: tok.markColor,
               textColor: tok.textColor,
+              blur: !!tok.blur,
               width: chW,
               fontStr
             });
@@ -4509,8 +5653,28 @@
       const maxBubbleW = containerW * 0.65;
       const blocks = [];
       let totalH = 0;
+      let chapterNo = 0;
 
       items.forEach(item => {
+        // 게임 / 대본 테마
+        if (isCustomChatTheme(state.chatTheme)) {
+          let cb;
+          if (item.type === 'message') {
+            const prof = state.profiles[item.profileIdx] || state.profiles[0];
+            cb = layoutThemeMsg(state.chatTheme, prof, item.profileIdx, item.text, item.transText, fontSize, containerW);
+            cb.gapAfter = fontSize * (state.chatTheme === 'game' ? 0.85 : 0.75);
+          } else {
+            if (item.type === 'date') chapterNo++;
+            const no = Math.max(1, chapterNo);
+            cb = state.chatTheme === 'game'
+              ? layoutGameLine(item.type, item.text, fontSize, containerW, no)
+              : layoutScriptLine(item.type, item.text, fontSize, containerW, no);
+          }
+          blocks.push({ type: 'custom', custom: cb });
+          totalH += cb.h + cb.gapAfter;
+          return;
+        }
+
         if (item.type === 'date' || item.type === 'system') {
           const capFs = Math.max(11, fontSize * 0.68);
           // 서식 파싱을 거쳐 런(Runs) 단위로 실제 너비 계산
@@ -5122,7 +6286,7 @@
           lines.forEach(line => {
             let curX = contentX;
             const centerY = curTitleY + (fs / 2);
-            line.runs.forEach(run => {
+            line.runs.forEach((run, rIdx) => {
               const emojiFont = getFontFamily(state.font);
               // 굵기(Bold) / 기울임(Italic) 토글 태그 반영, 기본값은 지정된 굵기 적용
               if (run.bold && run.italic) ctx.font = `bold italic ${fs}px ${emojiFont}`;
@@ -5137,13 +6301,7 @@
 
               ctx.fillStyle = hexToRgba(run.textColor || state.ink, defaultAlpha);
               ctx.textBaseline = 'middle';
-              let drawCharX = curX;
-              const runChars = splitGraphemes(run.text);
-              for (let c = 0; c < runChars.length; c++) {
-                const ch = runChars[c];
-                ctx.fillText(ch, drawCharX, centerY);
-                drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-              }
+              drawRunChars(splitGraphemes(run.text), curX, centerY, run.blur, fs, line.runs[rIdx - 1], line.runs[rIdx + 1]);
 
               if (run.strike) {
                 ctx.strokeStyle = hexToRgba(run.textColor || state.ink, defaultAlpha);
@@ -5300,12 +6458,7 @@
             }
 
             ctx.fillStyle = hexToRgba(run.textColor || defaultColor, alpha);
-            let drawCharX = curX;
-            for (let c = 0; c < runChars.length; c++) {
-              const ch = runChars[c];
-              ctx.fillText(ch, drawCharX, centerY);
-              drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-            }
+            drawRunChars(runChars, curX, centerY, run.blur, currentFs, runs[rIdx - 1], runs[rIdx + 1]);
 
             if (run.strike) {
               ctx.strokeStyle = hexToRgba(run.textColor || defaultColor, alpha);
@@ -5380,6 +6533,21 @@
                   transContent = transMatch[1];
                   i++;
                 }
+              }
+
+              // 게임 / 대본 테마
+              if (isCustomChatTheme(theme)) {
+                const cb = layoutThemeMsg(theme, prof, pIdx, msgContent, transContent, fs, containerW);
+                let nextIsChatC = false;
+                for (let n = i + 1; n < rawLines.length; n++) {
+                  const nTrim = rawLines[n].trim();
+                  if (!nTrim || nTrim.startsWith('[-]')) continue;
+                  nextIsChatC = /^\[[1-6]\]/.test(nTrim);
+                  break;
+                }
+                const bm = nextIsChatC ? fs * (theme === 'game' ? 0.85 : 0.6) : fs * 1.3;
+                blocks.push({ type: 'chat', custom: cb, height: cb.h + bm });
+                continue;
               }
 
               const maxBubbleW = (theme === 'discord')
@@ -5582,6 +6750,7 @@
         const theme = state.chatTheme || 'kakao';
 
         // --- 블록별 실제 렌더링 루프 ---
+        const lastCustomChat = [...layout.blocks].reverse().find(x => x.type === 'chat' && x.custom);
         layout.blocks.forEach(b => {
           if (b.type === 'empty') {
             curRenderY += b.height;
@@ -5636,6 +6805,9 @@
 
             curRenderY += b.height;
 
+          } else if (b.type === 'chat' && b.custom) {
+            drawThemeBlock(b.custom, textBox.x, curRenderY, textBox.w, b === lastCustomChat);
+            curRenderY += b.height;
           } else if (b.type === 'chat') {
             const prof = b.prof;
             const isRight = prof.align === 'right';
@@ -5772,8 +6944,15 @@
         }
 
         let curY = workAreaY + Math.max(0, (workAreaH - layout.totalH) * getVAlignFactor());
+        const lastCustomMsg = [...layout.blocks].reverse().find(x => x.type === 'custom' && (x.custom.kind === 'game' || x.custom.kind === 'script'));
 
         layout.blocks.forEach(b => {
+          if (b.type === 'custom') {
+            drawThemeBlock(b.custom, contentX, curY, contentW, b === lastCustomMsg);
+            curY += b.custom.h + b.custom.gapAfter;
+            return;
+          }
+
           // --- 1. 날짜 및 시스템 메시지 (서식 태그 렌더링 지원) ---
           if (b.type === 'date' || b.type === 'system') {
             const cx = contentX + (contentW / 2);
@@ -5783,7 +6962,7 @@
             const drawTagRuns = (runsList, startX, centerY, defaultColor) => {
               runsList.forEach(line => {
                 let curX = startX;
-                line.runs.forEach(run => {
+                line.runs.forEach((run, rIdx) => {
                   // 기본 알림 폰트 크기와 가중치를 유지하면서 볼드/이탤릭 반영
                   const emojiFontList = `"${state.font}", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
                   let fontStr = '';
@@ -5800,13 +6979,7 @@
                   }
 
                   ctx.fillStyle = run.textColor || defaultColor;
-                  let drawCharX = curX;
-                  const runChars = Array.from(run.text);
-                  for (let c = 0; c < runChars.length; c++) {
-                    const ch = runChars[c];
-                    ctx.fillText(ch, drawCharX, centerY);
-                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-                  }
+                  drawRunChars(Array.from(run.text), curX, centerY, run.blur, b.fontSize, line.runs[rIdx - 1], line.runs[rIdx + 1]);
 
                   if (run.strike) {
                     ctx.strokeStyle = run.textColor || defaultColor;
@@ -5908,13 +7081,7 @@
                   }
 
                   ctx.fillStyle = hexToRgba(run.textColor || textColor, alpha);
-                  let drawCharX = curX;
-                  const runChars = splitGraphemes(run.text);
-                  for (let c = 0; c < runChars.length; c++) {
-                    const ch = runChars[c];
-                    ctx.fillText(ch, drawCharX, lineY);
-                    drawCharX += ctx.measureText(ch).width + state.letterSpacing;
-                  }
+                  drawRunChars(splitGraphemes(run.text), curX, lineY, run.blur, currentFs, line.runs[rIdx - 1], line.runs[rIdx + 1]);
 
                   if (run.strike) {
                     ctx.strokeStyle = hexToRgba(run.textColor || textColor, alpha);
@@ -7500,6 +8667,7 @@
         else if (type === 'italic') { prefix = '*'; suffix = '*'; }
         else if (type === 'underline') { prefix = '__'; suffix = '__'; }
         else if (type === 'strike') { prefix = '~~'; suffix = '~~'; }
+        else if (type === 'blur') { prefix = '||'; suffix = '||'; }
         else if (type === 'mark') {
           prefix = (param && param.toLowerCase() !== '#ffeb3b') ? `==${param}:` : '==';
           suffix = '==';
@@ -7564,6 +8732,13 @@
           newSel = '~~' + sel + '~~';
         }
       } 
+      else if (type === 'blur') {
+        if (sel.includes('||')) {
+          newSel = sel.replaceAll('||', '');
+        } else {
+          newSel = '||' + sel + '||';
+        }
+      }
       else if (type === 'mark') {
         const markRegex = /==(?:(#[0-9A-Fa-f]{3,6}):)?([\s\S]*?)==/;
         if (markRegex.test(sel)) {
@@ -7626,6 +8801,7 @@
         else if (!e.shiftKey && e.code === 'KeyI') action = ['italic'];
         else if (!e.shiftKey && e.code === 'KeyU') action = ['underline'];
         else if (e.shiftKey && e.code === 'KeyX') action = ['strike'];
+        else if (e.shiftKey && e.code === 'KeyE') action = ['blur'];
         else if (e.shiftKey && e.code === 'KeyH') action = ['mark', state.hlColors[state.curHlSlot]];
         if (!action) return;
         e.preventDefault();
@@ -7644,6 +8820,7 @@
     document.getElementById('fmt-italic').addEventListener('click', () => toggleFormat('italic'));
     document.getElementById('fmt-underline').addEventListener('click', () => toggleFormat('underline'));
     document.getElementById('fmt-strike').addEventListener('click', () => toggleFormat('strike'));
+    document.getElementById('fmt-blur').addEventListener('click', () => toggleFormat('blur'));
     
     // --- 형광펜 듀얼 슬롯 로직 ---
     const hlBtn = document.getElementById('fmt-hl-btn');
@@ -8012,10 +9189,16 @@
 
     // 폰트
     document.getElementById('font-group').addEventListener('click', (e) => {
-      if (e.target.tagName !== 'BUTTON') return;
-      document.querySelectorAll('#font-group button').forEach(b => b.classList.remove('on'));
-      e.target.classList.add('on');
-      state.font = e.target.dataset.font;
+      const del = e.target.closest('.font-del');
+      if (del) {
+        e.stopPropagation();
+        removeCustomFont(del.dataset.family);
+        return;
+      }
+      const btn = e.target.closest('button[data-font]');
+      if (!btn) return;
+      state.font = btn.dataset.font;
+      syncFontUI();
       render();
     });
 
@@ -8282,9 +9465,161 @@
     }
 
     // ==========================================
+    // ==========================================
+    // 내 폰트 추가 (폰트 파일 → 서체 선택에 추가)
+    // - 폰트 파일은 이 기기의 IndexedDB에 따로 저장 (프리셋엔 폰트 이름만 저장돼서 프리셋이 무거워지지 않음)
+    // ==========================================
+    const BUILTIN_FONTS = ['Pretendard', 'Noto Serif KR'];
+    const FONT_DB = 'UxiCardFonts';
+    const customFonts = []; // { family, face }
+    let fontDBPromise = null;
+
+    function openFontDB() {
+      if (!fontDBPromise) {
+        fontDBPromise = new Promise((resolve, reject) => {
+          const req = indexedDB.open(FONT_DB, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('fonts')) db.createObjectStore('fonts', { keyPath: 'family' });
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => { fontDBPromise = null; reject(req.error); };
+        });
+      }
+      return fontDBPromise;
+    }
+
+    async function fontDB(mode, fn) {
+      const db = await openFontDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('fonts', mode);
+        const out = fn(tx.objectStore('fonts'));
+        tx.oncomplete = () => resolve(out && 'result' in out ? out.result : undefined);
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function registerFontFace(family, buffer) {
+      const face = new FontFace(family, buffer);
+      await face.load();
+      document.fonts.add(face);
+      return face;
+    }
+
+    async function loadCustomFonts() {
+      try {
+        const rows = (await fontDB('readonly', st => st.getAll())) || [];
+        rows.sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+        for (const row of rows) {
+          try {
+            const face = await registerFontFace(row.family, row.data);
+            customFonts.push({ family: row.family, face });
+          } catch (e) {
+            console.warn('저장된 폰트를 불러오지 못했어요:', row.family, e);
+          }
+        }
+      } catch (e) {
+        console.warn('폰트 저장소를 열지 못했어요:', e);
+      }
+      renderFontButtons();
+    }
+
+    function renderFontButtons() {
+      const group = document.getElementById('font-group');
+      group.querySelectorAll('button.custom-font').forEach(b => b.remove());
+      customFonts.forEach(({ family }) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'custom-font';
+        b.dataset.font = family;
+        b.title = family;
+        b.style.fontFamily = `"${family}", sans-serif`;
+        const name = document.createElement('span');
+        name.className = 'font-name';
+        name.textContent = family;
+        const del = document.createElement('span');
+        del.className = 'font-del';
+        del.dataset.family = family;
+        del.title = '이 폰트 지우기';
+        del.textContent = '✕';
+        b.append(name, del);
+        group.appendChild(b);
+      });
+      syncFontUI();
+    }
+
+    function syncFontUI() {
+      document.querySelectorAll('#font-group button[data-font]').forEach(b => {
+        b.classList.toggle('on', b.dataset.font === state.font);
+      });
+      const hint = document.getElementById('font-missing-hint');
+      const known = BUILTIN_FONTS.includes(state.font) || customFonts.some(f => f.family === state.font);
+      if (!known && state.font) {
+        hint.style.display = 'block';
+        hint.textContent = `'${state.font}' 폰트가 이 기기에 없어서 기본 글꼴로 보여요. 같은 폰트 파일을 추가하면 그대로 보여요.`;
+      } else {
+        hint.style.display = 'none';
+      }
+    }
+
+    function makeFontFamilyName(fileName) {
+      let base = String(fileName || '내 폰트').replace(/\.(ttf|otf|woff2?)$/i, '');
+      base = base.replace(/["'\\<>{};]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30) || '내 폰트';
+      const taken = new Set([...BUILTIN_FONTS, ...customFonts.map(f => f.family)]);
+      if (!taken.has(base)) return base;
+      let i = 2;
+      while (taken.has(`${base} (${i})`)) i++;
+      return `${base} (${i})`;
+    }
+
+    document.getElementById('in-font-file').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      e.target.value = '';
+      let lastFamily = null;
+      const failed = [];
+      for (const file of files) {
+        if (!/\.(ttf|otf|woff2?)$/i.test(file.name)) { failed.push(file.name); continue; }
+        try {
+          const data = await file.arrayBuffer();
+          const family = makeFontFamilyName(file.name);
+          const face = await registerFontFace(family, data);
+          customFonts.push({ family, face });
+          try {
+            await fontDB('readwrite', st => st.put({ family, data, fileName: file.name, addedAt: Date.now() }));
+          } catch (err) {
+            console.warn('폰트 저장 실패 (이번에만 쓸 수 있어요):', err);
+          }
+          lastFamily = family;
+        } catch (err) {
+          console.warn('폰트 읽기 실패:', file.name, err);
+          failed.push(file.name);
+        }
+      }
+      if (lastFamily) state.font = lastFamily;
+      renderFontButtons();
+      render();
+      if (failed.length) alert(`폰트 파일을 읽지 못했어요:\n${failed.join('\n')}\n(ttf · otf · woff · woff2 파일만 넣을 수 있어요)`);
+    });
+
+    async function removeCustomFont(family) {
+      const idx = customFonts.findIndex(f => f.family === family);
+      if (idx < 0) return;
+      if (!confirm(`'${family}' 폰트를 지울까요?\n이 폰트를 쓰는 프리셋은 기본 글꼴로 보이게 돼요.`)) return;
+      const { face } = customFonts[idx];
+      customFonts.splice(idx, 1);
+      try { document.fonts.delete(face); } catch (e) {}
+      try { await fontDB('readwrite', st => st.delete(family)); } catch (e) {}
+      if (state.font === family) state.font = 'Pretendard';
+      renderFontButtons();
+      render();
+    }
+
+    // 저장된 폰트를 먼저 불러온 뒤에 작업 복원/첫 화면을 그림
+    const customFontsReady = loadCustomFonts().catch(() => {});
+
     // 최초 실행 및 복원 모달 연동
     // ==========================================
-    document.fonts.ready.then(() => {
+    Promise.all([document.fonts.ready, customFontsReady]).then(() => {
       const saved = localStorage.getItem(STORAGE_KEY);
       const modal = document.getElementById('restore-modal');
 
@@ -8549,7 +9884,7 @@
           <span class="preset-item-name" title="${escapeHtml(preset.name)}">${escapeHtml(preset.name)}</span>
           <div class="preset-item-meta">
             <span class="preset-item-dot" style="background:${bgDotColor};" title="배경: ${preset.bgType}"></span>
-            <span style="font-family:'${preset.font}', sans-serif;">${preset.font === 'Pretendard' ? '고딕' : '명조'}</span>
+            <span style="font-family:'${escapeHtml(preset.font)}', sans-serif;">${preset.font === 'Pretendard' ? '고딕' : preset.font === 'Noto Serif KR' ? '명조' : escapeHtml(String(preset.font || '').slice(0, 8))}</span>
             <span>·</span>
             <span style="color:${accent}; font-weight:800;">A</span>
           </div>
@@ -9040,7 +10375,7 @@
           b.classList.toggle('on', b.dataset[attr] === currentVal);
         });
       };
-      syncGroup('font-group', 'font', state.font);
+      syncFontUI();
         syncGroup('valign-group', 'valign', state.vAlign || 'middle');
       
       // 기존 syncGroup('ratio-group', 'ratio', state.ratio); 대신:
@@ -9215,6 +10550,520 @@
       document.getElementById('subtitle-fs-val').innerText = `${state.subtitleFontSize}px`;
       render();
     });
+
+
+    // ==========================================
+    // 이미지 붙여넣기 (Ctrl+V) → 넣을 곳 고르기
+    // - 버튼으로 올릴 때와 똑같은 자리(state)에 넣어서
+    //   자동저장 · 프리셋 저장/불러오기 · 내보내기가 그대로 동작함
+    // - 창 상태(pasteUI)는 state 밖에 있어서 프리셋에 섞이지 않음
+    // ==========================================
+    const PASTE_MAX = 20; // 한 번에 받을 최대 장수
+    const pasteModal = document.getElementById('paste-modal');
+    const pasteCard = document.getElementById('paste-card');
+    const pasteTiles = Array.from(document.querySelectorAll('#paste-tiles .paste-tile'));
+    const pasteIsMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+    const pasteMobileMQ = window.matchMedia('(max-width: 768px)');
+
+    const pasteUI = {
+      open: false,
+      busy: false,
+      items: [],        // { blob, url, w, h, ext }
+      target: null,     // 'bg' | 'chat' | 'sticker' | 'insert'
+      profileIdx: 0,
+      returnFocus: null
+    };
+
+    document.getElementById('paste-chip-text').innerText = pasteIsMac ? '⌘ + V' : 'Ctrl + V';
+
+    function isAnyModalOpen() {
+      return ['preset-modal', 'htmlex-modal', 'restore-modal'].some(id => {
+        const el = document.getElementById(id);
+        return el && getComputedStyle(el).display !== 'none';
+      });
+    }
+
+    function getClipboardImageFiles(cd) {
+      if (!cd) return [];
+      const out = [];
+      Array.from(cd.items || []).forEach(item => {
+        if (item.kind === 'file' && /^image\//.test(item.type)) {
+          const f = item.getAsFile();
+          if (f) out.push(f);
+        }
+      });
+      if (!out.length) {
+        Array.from(cd.files || []).forEach(f => { if (/^image\//.test(f.type)) out.push(f); });
+      }
+      return out.slice(0, PASTE_MAX);
+    }
+
+    function isTypingField(el) {
+      if (!el) return false;
+      if (el.isContentEditable) return true;
+      if (el.tagName === 'TEXTAREA') return true;
+      return el.tagName === 'INPUT' && /^(text|search|url|email|)$/i.test(el.type || '');
+    }
+
+    document.addEventListener('paste', (e) => {
+      if (isAnyModalOpen() || pasteUI.busy) return;
+      const files = getClipboardImageFiles(e.clipboardData);
+      if (!files.length) return;
+
+      // 엑셀 셀처럼 글자+그림이 같이 복사된 경우, 입력칸에선 글자 붙여넣기를 우선
+      const text = e.clipboardData.getData('text/plain');
+      if (isTypingField(e.target) && text && text.trim()) return;
+
+      e.preventDefault();
+      openPasteModal(files);
+    });
+
+    function loadPasteItem(blob) {
+      return new Promise((resolve) => {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        const ext = ((blob.type || '').split('/')[1] || 'image').replace('jpeg', 'jpg').replace('svg+xml', 'svg').toUpperCase();
+        img.onload = () => resolve({ blob, url, w: img.naturalWidth, h: img.naturalHeight, ext });
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+        img.src = url;
+      });
+    }
+
+    function releasePasteItems() {
+      pasteUI.items.forEach(it => URL.revokeObjectURL(it.url));
+      pasteUI.items = [];
+    }
+
+    async function openPasteModal(files, source = 'paste') {
+      pasteUI.source = source;
+      const items = (await Promise.all(files.map(loadPasteItem))).filter(Boolean);
+      if (!items.length) {
+        alert('붙여넣은 이미지를 읽지 못했어요.');
+        return;
+      }
+      releasePasteItems();
+      pasteUI.items = items;
+
+      const isMulti = items.length > 1;
+      const isChat = state.mode === 'chat';
+      pasteUI.target = isChat ? 'chat' : (isMulti ? 'sticker' : 'bg');
+      pasteUI.profileIdx = state.currentProfileIdx || 0;
+      if (!pasteUI.open) pasteUI.returnFocus = document.activeElement;
+
+      renderPastePreview();
+      renderPasteModal();
+
+      pasteUI.open = true;
+      pasteModal.classList.add('open');
+      pasteModal.setAttribute('aria-hidden', 'false');
+      const sel = pasteTiles.find(t => t.dataset.target === pasteUI.target);
+      setTimeout(() => (sel || pasteTiles[0]).focus({ preventScroll: true }), 30);
+    }
+
+    function closePasteModal(restoreFocus = true) {
+      if (!pasteUI.open) return;
+      pasteUI.open = false;
+      pasteModal.classList.remove('open');
+      pasteModal.setAttribute('aria-hidden', 'true');
+      releasePasteItems();
+      const back = pasteUI.returnFocus;
+      pasteUI.returnFocus = null;
+      if (restoreFocus && back && document.contains(back) && back.focus) back.focus({ preventScroll: true });
+    }
+
+    function renderPastePreview() {
+      const items = pasteUI.items;
+      const isMulti = items.length > 1;
+      const preview = document.getElementById('paste-preview');
+      const thumbs = document.getElementById('paste-thumbs');
+      const first = items[0];
+
+      preview.innerHTML = '';
+      preview.classList.toggle('multi', isMulti);
+      document.getElementById('paste-preview-col').classList.toggle('multi', isMulti);
+
+      if (!isMulti) {
+        const img = document.createElement('img');
+        img.className = 'single';
+        img.alt = '붙여넣은 이미지';
+        img.src = first.url;
+        preview.appendChild(img);
+      } else {
+        // 앞의 3장을 살짝 비껴 겹쳐 보여주기 (첫 장이 맨 위)
+        const poses = [
+          { dx: 0, dy: 6, r: 0 },
+          { dx: 24, dy: -6, r: 6 },
+          { dx: -24, dy: 0, r: -8 }
+        ];
+        items.slice(0, 3).reverse().forEach((it, i, arr) => {
+          const p = poses[arr.length - 1 - i];
+          const img = document.createElement('img');
+          img.className = 'stack';
+          img.alt = '';
+          img.src = it.url;
+          img.style.transform = `translate(calc(-50% + ${p.dx}px), calc(-50% + ${p.dy}px)) rotate(${p.r}deg)`;
+          preview.appendChild(img);
+        });
+      }
+
+      thumbs.innerHTML = '';
+      thumbs.classList.toggle('show', isMulti);
+      if (isMulti) {
+        items.forEach((it, i) => {
+          const img = document.createElement('img');
+          img.alt = `이미지 ${i + 1}`;
+          img.src = it.url;
+          thumbs.appendChild(img);
+        });
+      }
+
+      document.getElementById('paste-meta-label').innerText = isMulti ? '붙여넣은 순서대로 들어갑니다' : '붙여넣은 이미지';
+      document.getElementById('paste-meta-info').innerText = isMulti ? '' : `${first.w} × ${first.h} · ${first.ext}`;
+
+      // 모바일 머리
+      document.getElementById('paste-mthumb').src = first.url;
+      document.getElementById('paste-mmeta').innerText = isMulti
+        ? `붙여넣은 이미지 ${items.length}장`
+        : `붙여넣은 이미지 · ${first.w} × ${first.h}`;
+    }
+
+    function getPasteTileInfo() {
+      const n = pasteUI.items.length;
+      const isMulti = n > 1;
+      const isChat = state.mode === 'chat';
+      const nextNo = (state.chatImages || []).reduce((m, c) => Math.max(m, c.no || 0), 0) + 1;
+
+      return {
+        bg: {
+          enabled: !isMulti,
+          desc: isMulti ? '한 장만 넣을 수 있어요' : '본문 배경으로 들어가는 사진'
+        },
+        chat: {
+          enabled: true,
+          desc: isMulti
+            ? `<b>[사진${nextNo}]~[사진${nextNo + n - 1}]</b> 가 한 줄씩 들어갑니다`
+            : '채팅 말풍선에 들어가는 사진'
+        },
+        sticker: {
+          enabled: true,
+          desc: isMulti ? `${n}장이 한꺼번에 올라갑니다` : '화면에 자유롭게 배치할 수 있는 사진'
+        },
+        insert: {
+          enabled: !isMulti && !isChat,
+          desc: isChat
+            ? (isMulti ? '일반 모드에서 한 장만' : '일반 모드에서만 쓸 수 있어요')
+            : (isMulti ? '한 장만 넣을 수 있어요' : '본문 옆에 같이 들어가는 사진')
+        }
+      };
+    }
+
+    function profileLabel(i) {
+      const name = ((state.profiles[i] && state.profiles[i].name) || '').trim();
+      return name ? `P${i + 1} · ${name}` : `P${i + 1}`;
+    }
+
+    function renderPasteModal() {
+      const n = pasteUI.items.length;
+      const isMulti = n > 1;
+      const isChat = state.mode === 'chat';
+      const info = getPasteTileInfo();
+
+      // 고른 칸이 막혀 있으면 쓸 수 있는 첫 칸으로
+      if (!info[pasteUI.target] || !info[pasteUI.target].enabled) {
+        pasteUI.target = ['chat', 'sticker', 'bg', 'insert'].find(k => info[k].enabled);
+      }
+
+      const title = isMulti ? `이미지 ${n}장 삽입 선택` : '이미지 삽입 선택';
+      document.getElementById('paste-title').innerText = title;
+      document.getElementById('paste-mtitle').innerText = title;
+      pasteCard.setAttribute('aria-label', title);
+      document.getElementById('paste-chip-text').innerText = isMulti ? `${n}장` : (pasteUI.source === 'drop' ? '끌어다 놓기' : (pasteIsMac ? '⌘ + V' : 'Ctrl + V'));
+
+      pasteTiles.forEach(tile => {
+        const key = tile.dataset.target;
+        const t = info[key];
+        tile.disabled = !t.enabled;
+        tile.classList.toggle('on', t.enabled && key === pasteUI.target);
+        tile.classList.toggle('recommend', isChat && key === 'chat');
+        tile.setAttribute('aria-pressed', String(t.enabled && key === pasteUI.target));
+        tile.querySelector('.paste-tile-desc').innerHTML = t.desc;
+      });
+
+      // 말풍선 프로필 고르기
+      const seg = document.getElementById('paste-profile-seg');
+      seg.innerHTML = '';
+      state.profiles.forEach((p, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = profileLabel(i);
+        b.title = profileLabel(i);
+        b.classList.toggle('on', i === pasteUI.profileIdx);
+        b.setAttribute('aria-pressed', String(i === pasteUI.profileIdx));
+        b.addEventListener('click', () => {
+          pasteUI.profileIdx = i;
+          renderPasteModal();
+        });
+        seg.appendChild(b);
+      });
+      pasteCard.classList.toggle('show-profile', pasteUI.target === 'chat');
+      pasteCard.classList.toggle('is-chatmode', isChat);
+
+      // 안내 문구
+      const notice = document.getElementById('paste-notice');
+      const noticeText = pasteUI.target === 'bg'
+        ? '지금 쓰는 배경 이미지가 있으면 새 사진으로 바뀝니다.'
+        : pasteUI.target === 'insert'
+          ? '지금 쓰는 본문 이미지가 있으면 새 사진으로 바뀝니다.'
+          : '';
+      document.getElementById('paste-notice-text').innerText = noticeText;
+      notice.classList.toggle('show', Boolean(noticeText));
+
+      document.getElementById('paste-hint').innerHTML = isMulti
+        ? '배경과 본문 이미지는 한 장씩 붙여넣어 주세요'
+        : '숫자키 <b>1–4</b>&nbsp;삽입 · <b>Esc</b> 취소';
+
+      const cnt = isMulti ? ` ${n}장` : '';
+      const applyText = {
+        bg: '카드 배경에 넣기',
+        chat: `P${pasteUI.profileIdx + 1} 말풍선으로${cnt} 넣기`,
+        sticker: `스티커로${cnt} 넣기`,
+        insert: '본문 이미지로 넣기'
+      }[pasteUI.target] || '넣기';
+      document.getElementById('paste-apply-text').innerText = applyText;
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = () => resolve(null);
+        fr.readAsDataURL(blob);
+      });
+    }
+
+    function prepareStickerDataAsync(dataUrl) {
+      return new Promise((resolve) => {
+        prepareStickerData(dataUrl, (data, iw, ih) => resolve(data ? { data, iw, ih } : null));
+      });
+    }
+
+    function loadImageFromData(data) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = data;
+      });
+    }
+
+    async function applyPaste(target) {
+      if (pasteUI.busy || !pasteUI.open) return;
+      const info = getPasteTileInfo();
+      if (!info[target] || !info[target].enabled) return;
+
+      pasteUI.busy = true;
+      const applyBtn = document.getElementById('btn-paste-apply');
+      applyBtn.disabled = true;
+      const blobs = pasteUI.items.map(it => it.blob);
+      const profileIdx = pasteUI.profileIdx;
+
+      try {
+        if (target === 'bg' || target === 'insert') {
+          // 배경 / 본문 이미지: 버튼으로 올릴 때처럼 원본 그대로 저장
+          const data = await blobToDataUrl(blobs[0]);
+          const img = data && await loadImageFromData(data);
+          if (!img) throw new Error('이미지 읽기 실패');
+
+          if (target === 'bg') {
+            state.bgImgData = data;
+            state.bgImg = img;
+            state.bgPosX = 0;
+            state.bgPosY = 0;
+            state.bgType = 'image';
+            document.querySelectorAll('#bgtype-group button').forEach(b => b.classList.toggle('on', b.dataset.bgtype === 'image'));
+            syncBgTypeUI();
+            document.getElementById('file-name').innerText = '붙여넣은 이미지';
+          } else {
+            state.insertImgData = data;
+            state.insertImg = img;
+            state.insertPosX = 0;
+            state.insertPosY = 0;
+            state.showInsert = true;
+            togInsert.classList.add('on');
+            insertControls.style.display = 'flex';
+            document.getElementById('insert-file-name').innerText = '붙여넣은 이미지';
+          }
+          closePasteModal(false);
+          render();
+        }
+
+        else if (target === 'sticker') {
+          if (!Array.isArray(state.stickers)) state.stickers = [];
+          let lastId = null;
+          for (const blob of blobs) {
+            const raw = await blobToDataUrl(blob);
+            const prep = raw && await prepareStickerDataAsync(raw);
+            if (!prep) continue;
+            const base = getSelectedSticker() || STICKER_DEFAULTS;
+            const count = state.stickers.length;
+            const st = {
+              id: newStickerId(),
+              data: prep.data,
+              aspect: prep.iw / prep.ih,
+              x: canvas.width / 2 + ((count % 5) - 2) * 36,
+              y: canvas.height / 2 + ((count % 5) - 2) * 36,
+              w: Math.min(canvas.width, canvas.height) * 0.38,
+              rot: 0,
+              borderW: base.borderW,
+              borderColor: base.borderColor,
+              shadow: base.shadow
+            };
+            state.stickers.push(st);
+            lastId = st.id;
+          }
+          closePasteModal(false);
+          if (lastId) selectSticker(lastId);
+          render();
+        }
+
+        else if (target === 'chat') {
+          if (!Array.isArray(state.chatImages)) state.chatImages = [];
+          const lines = [];
+          for (const blob of blobs) {
+            const raw = await blobToDataUrl(blob);
+            const prep = raw && await prepareStickerDataAsync(raw);
+            if (!prep) continue;
+            const no = state.chatImages.reduce((m, c) => Math.max(m, c.no || 0), 0) + 1;
+            state.chatImages.push({ id: newStickerId(), no, data: prep.data, aspect: prep.iw / prep.ih });
+            lines.push(`[${profileIdx + 1}] [사진${no}]`);
+          }
+          renderChatImageList();
+          closePasteModal(false);
+          if (lines.length) insertSnippet(lines.join('\n')); // 본문 커서 자리에 넣고 다시 그림
+          else render();
+        }
+      } catch (err) {
+        console.warn('붙여넣기 실패:', err);
+        alert('이미지를 넣지 못했어요. 다시 붙여넣어 주세요.');
+      } finally {
+        pasteUI.busy = false;
+        applyBtn.disabled = false;
+      }
+    }
+
+    // 칸 누르기: PC는 한 번 = 고르기, 고른 칸을 한 번 더 = 넣기 / 모바일은 바로 넣기
+    pasteTiles.forEach(tile => {
+      tile.addEventListener('click', () => {
+        if (tile.disabled) return;
+        const key = tile.dataset.target;
+        if (pasteMobileMQ.matches || pasteUI.target === key) {
+          applyPaste(key);
+          return;
+        }
+        pasteUI.target = key;
+        renderPasteModal();
+      });
+      tile.addEventListener('dblclick', () => { if (!tile.disabled) applyPaste(tile.dataset.target); });
+    });
+
+    document.getElementById('btn-paste-apply').addEventListener('click', () => applyPaste(pasteUI.target));
+    document.getElementById('btn-paste-cancel').addEventListener('click', () => closePasteModal());
+    document.getElementById('btn-paste-close').addEventListener('click', () => closePasteModal());
+    pasteModal.addEventListener('click', (e) => { if (e.target === pasteModal) closePasteModal(); });
+
+    // 창이 열려 있을 땐 키보드를 창이 먼저 받음 (스티커 방향키·삭제 등이 같이 안 움직이게)
+    window.addEventListener('keydown', (e) => {
+      if (!pasteUI.open) return;
+      e.stopPropagation();
+      if (e.isComposing) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closePasteModal();
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const keyMap = { '1': 'bg', '2': 'chat', '3': 'sticker', '4': 'insert' };
+      const digit = /^Digit[1-4]$/.test(e.code) ? e.code.slice(5) : (keyMap[e.key] ? e.key : null);
+      if (digit) {
+        e.preventDefault();
+        applyPaste(keyMap[digit]);
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        // 버튼에 포커스가 있으면 그 버튼이 알아서 눌림
+        if (document.activeElement && document.activeElement.tagName === 'BUTTON' && pasteModal.contains(document.activeElement)) return;
+        e.preventDefault();
+        applyPaste(pasteUI.target);
+        return;
+      }
+
+      // 창 밖으로 Tab 이동 막기
+      if (e.key === 'Tab') {
+        const focusables = Array.from(pasteCard.querySelectorAll('button:not(:disabled)')).filter(el => el.offsetParent !== null);
+        if (!focusables.length) return;
+        const firstEl = focusables[0];
+        const lastEl = focusables[focusables.length - 1];
+        if (!pasteCard.contains(document.activeElement)) { e.preventDefault(); firstEl.focus(); }
+        else if (e.shiftKey && document.activeElement === firstEl) { e.preventDefault(); lastEl.focus(); }
+        else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); firstEl.focus(); }
+      }
+    }, true);
+
+
+    // ==========================================
+    // 이미지 끌어다 놓기 → 붙여넣기와 같은 '이미지 삽입 선택' 창
+    // ==========================================
+    const dropOverlay = document.getElementById('drop-overlay');
+    let dropDepth = 0;
+
+    function dragHasFiles(e) {
+      const types = e.dataTransfer && e.dataTransfer.types;
+      return !!types && Array.from(types).includes('Files');
+    }
+
+    function hideDropOverlay() {
+      dropDepth = 0;
+      dropOverlay.classList.remove('show');
+    }
+
+    window.addEventListener('dragenter', (e) => {
+      if (!dragHasFiles(e) || isAnyModalOpen()) return;
+      e.preventDefault();
+      dropDepth++;
+      dropOverlay.classList.add('show');
+    });
+
+    window.addEventListener('dragover', (e) => {
+      if (!dragHasFiles(e)) return;
+      e.preventDefault(); // 브라우저가 파일을 새 탭으로 여는 것 막기
+      e.dataTransfer.dropEffect = isAnyModalOpen() ? 'none' : 'copy';
+    });
+
+    window.addEventListener('dragleave', (e) => {
+      if (!dragHasFiles(e)) return;
+      dropDepth = Math.max(0, dropDepth - 1);
+      if (dropDepth === 0) dropOverlay.classList.remove('show');
+    });
+
+    window.addEventListener('drop', (e) => {
+      if (!dragHasFiles(e)) return;
+      e.preventDefault();
+      hideDropOverlay();
+      if (isAnyModalOpen() || pasteUI.busy) return;
+
+      const all = Array.from(e.dataTransfer.files || []);
+      const images = all.filter(f => /^image\//.test(f.type)).slice(0, PASTE_MAX);
+      if (!images.length) {
+        if (all.length) alert('이미지 파일만 끌어다 놓을 수 있습니다.');
+        return;
+      }
+      openPasteModal(images, 'drop');
+    });
+
+    window.addEventListener('blur', hideDropOverlay);
   </script>
 </body>
 </html>
