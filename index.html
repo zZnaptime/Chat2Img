@@ -3450,6 +3450,14 @@
       </div>
 
       <div class="field-group">
+        <span class="label-sub">장평</span>
+        <div class="range-row">
+          <input type="range" id="in-hs" min="50" max="150" step="1" value="100">
+          <span id="hs-val">100%</span>
+        </div>
+      </div>
+
+      <div class="field-group">
         <span class="label-sub">행간</span>
         <div class="range-row">
           <input type="range" id="in-lh" min="1.2" max="2.6" step="0.05" value="1.75">
@@ -4143,6 +4151,7 @@
       font: 'Pretendard',
       fontSize: 24,
       letterSpacing: 0,
+      charWidth: 100, // 장평(%)
       lineHeightMult: 1.75,
       padding: 90,
       frameStyle: 'line',
@@ -4392,6 +4401,7 @@
         const sliders = [
           { id: 'in-fs', valId: 'fs-val', unit: 'px', val: state.fontSize },
           { id: 'in-ls', valId: 'ls-val', unit: 'px', val: state.letterSpacing },
+          { id: 'in-hs', valId: 'hs-val', unit: '%', val: state.charWidth ?? 100 },
           { id: 'in-lh', valId: 'lh-val', unit: '', val: state.lineHeightMult },
           { id: 'in-pad', valId: 'pad-val', unit: 'px', val: state.padding },
           { id: 'in-title-fs', valId: 'title-fs-val', unit: 'px', val: state.titleFontSize },
@@ -5723,7 +5733,7 @@
           const transFs = Math.max(11, Math.round(fontSize * 0.80));
           let transLines = [];
           let transBlockH = 0;
-          const transGap = Math.round(fontSize * 0.28);
+          const transGap = Math.max(Math.round(fontSize * 0.28), Math.round(fontSize * chatLhMult - fontSize / 2 - transFs / 2));
 
           if (item.transText) {
             transLines = tokenizeRunsToLines(item.transText, transFs, fontFam, letterSpacing, effectiveMaxW);
@@ -5794,7 +5804,45 @@
     let autoNeededH = 0;
     let autoHeight = 1200;
 
+    // 장평: 그릴 때만 글자를 가로로 늘이거나 줄임 (폭 계산도 같이 맞춤)
+    var TEXT_HSCALE = 1;
+    (function patchTextHScale() {
+      const P = CanvasRenderingContext2D.prototype;
+      const measure0 = P.measureText, fill0 = P.fillText, stroke0 = P.strokeText;
+      P.measureText = function (t) {
+        const m = measure0.call(this, t);
+        const k = TEXT_HSCALE;
+        if (k === 1) return m;
+        return {
+          width: m.width * k,
+          actualBoundingBoxLeft: m.actualBoundingBoxLeft * k,
+          actualBoundingBoxRight: m.actualBoundingBoxRight * k,
+          actualBoundingBoxAscent: m.actualBoundingBoxAscent,
+          actualBoundingBoxDescent: m.actualBoundingBoxDescent,
+          fontBoundingBoxAscent: m.fontBoundingBoxAscent,
+          fontBoundingBoxDescent: m.fontBoundingBoxDescent
+        };
+      };
+      const wrap = (orig) => function (t, x, y, maxW) {
+        const k = TEXT_HSCALE;
+        if (k === 1) return maxW === undefined ? orig.call(this, t, x, y) : orig.call(this, t, x, y, maxW);
+        this.save();
+        this.translate(x, y);
+        this.scale(k, 1);
+        if (maxW === undefined) orig.call(this, t, 0, 0);
+        else orig.call(this, t, 0, 0, maxW / k);
+        this.restore();
+      };
+      P.fillText = wrap(fill0);
+      P.strokeText = wrap(stroke0);
+    })();
+
     function render() {
+      TEXT_HSCALE = Math.max(0.5, Math.min(1.5, (state.charWidth ?? 100) / 100));
+      try { renderCore(); } finally { TEXT_HSCALE = 1; }
+    }
+
+    function renderCore() {
       if (state.ratio === 'auto') {
         // 1단계: 아주 긴 캔버스에 그려서 필요한 높이만 재고
         autoMeasuring = true;
@@ -6513,8 +6561,10 @@
           const chatLhMult = 1.32; // 메신저 전용 행간
           const lineSpacing = Math.round(fs * (chatLhMult - 1));
           const transFs = Math.max(11, Math.round(fs * 0.80));
-          const transGap = Math.round(fs * 0.28);
+          const transGap = Math.max(Math.round(fs * 0.28), Math.round(fs * chatLhMult - fs / 2 - transFs / 2));
           const transLineSpacing = Math.round(transFs * (chatLhMult - 1));
+          // 일반 지문은 사용자가 정한 줄간격을 따름
+          const paraTransGap = Math.max(Math.round(fs * 0.28), Math.round(fs * state.lineHeightMult - fs / 2 - transFs / 2));
           
           const theme = state.chatTheme || 'kakao';
 
@@ -6721,7 +6771,7 @@
               if (transContent !== null) {
                 transLines = tokenizeRunsToLines(transContent, transFs, state.font, state.letterSpacing, maxW);
                 const transLineH = transLines.length * (transFs * state.lineHeightMult);
-                paraH += transGap + transLineH;
+                paraH += paraTransGap + transLineH;
               }
 
               blocks.push({
@@ -6730,7 +6780,7 @@
                 lines: paraLines,
                 transLines,
                 transFs,
-                transGap,
+                transGap: paraTransGap,
                 lineHeight: fs * state.lineHeightMult,
                 height: paraH
               });
@@ -9150,6 +9200,11 @@
       document.getElementById('fs-val').innerText = `${state.fontSize}px`;
       render();
     });
+    document.getElementById('in-hs').addEventListener('input', (e) => {
+      state.charWidth = parseInt(e.target.value, 10);
+      document.getElementById('hs-val').innerText = `${state.charWidth}%`;
+      render();
+    });
     document.getElementById('in-ls').addEventListener('input', (e) => {
       state.letterSpacing = parseFloat(e.target.value);
       document.getElementById('ls-val').innerText = `${state.letterSpacing}px`;
@@ -10313,6 +10368,7 @@
       state.chatImages = Array.isArray(preset.chatImages) ? JSON.parse(JSON.stringify(preset.chatImages)) : [];
       renderChatImageList();
       state.vAlign = preset.vAlign || 'middle'; // 세로 정렬이 없던 예전 프리셋은 원래대로 가운데
+      state.charWidth = preset.charWidth ?? 100; // 장평이 없던 예전 프리셋은 100%
 
       const inText = document.getElementById('in-text');
       inText.value = state.text || '';
@@ -10333,6 +10389,7 @@
       const sliders = [
         { id: 'in-fs', valId: 'fs-val', unit: 'px', val: state.fontSize },
         { id: 'in-ls', valId: 'ls-val', unit: 'px', val: state.letterSpacing },
+          { id: 'in-hs', valId: 'hs-val', unit: '%', val: state.charWidth ?? 100 },
         { id: 'in-lh', valId: 'lh-val', unit: '', val: state.lineHeightMult },
         { id: 'in-pad', valId: 'pad-val', unit: 'px', val: state.padding },
         { id: 'in-title-fs', valId: 'title-fs-val', unit: 'px', val: state.titleFontSize },
