@@ -1454,6 +1454,34 @@
       color: #316888;
       font-weight: 700;
     }
+
+    /* 문법 도움말 접기/펼치기 (기본 접힘) */
+    .guide-fold > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #3a3a3a;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .guide-fold > summary::-webkit-details-marker { display: none; }
+    .guide-fold > summary::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      margin-right: 2px;
+      border-right: 1.6px solid currentColor;
+      border-bottom: 1.6px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    .guide-fold[open] > summary { margin-bottom: 6px; }
+    .guide-fold[open] > summary::after { transform: rotate(-135deg) translate(-2px, 0); }
       
     /* ================= 프리셋 관련 스타일 ================= */
     /* PC/기본 프리셋 토글 플로팅 버튼 */
@@ -3176,16 +3204,22 @@
         
         <!-- 일반 모드 안내사항 -->
         <div class="chat-guide-tip" id="normal-syntax-guide">
-          💡 <b>#</b> 제목 / <b>##</b> 부제목 / <b>###</b> 소제목 / <b>[사진1]</b> 본문 사진<br>
-          💡 <b>[1]~[6]</b>: 말풍선 삽입 / <b>[-]</b>: 번역 / <b>[1] [사진1]</b>: 사진 말풍선<br>
-          💡 <b>---</b> 구분선 / <b>-- 내용 --</b> 가운데 글이 들어간 구분선<br>
+          <details class="guide-fold">
+          <summary>💡 도움말</summary>
+          ✦ <b>#</b> 제목 / <b>##</b> 부제목 / <b>###</b> 소제목 / <b>[사진1]</b> 본문 사진<br>
+          ✦ <b>[1]~[6]</b>: 말풍선 삽입 / <b>[-]</b>: 번역 / <b>[1] [사진1]</b>: 사진 말풍선<br>
+          ✦ <b>---</b> 구분선 / <b>-- 내용 --</b> 가운데 글이 들어간 구분선<br>
           <span style="font-size: 11px; opacity: 0.85;">*말풍선은 <b>채팅 모드</b>에서 지정한 테마와 프로필 설정이 적용됩니다.</span>
+          </details>
         </div>
           
         <!-- 채팅 모드 안내사항 -->
         <div class="chat-guide-tip" id="chat-syntax-guide" style="display:none;">
-          💡 <b>[1]~[6]:</b> 프로필별 채팅 / <b>[-]:</b> 번역 / <b>[s]:</b> 시스템 알림 / <b>[사진1]:</b> 사진<br>
+          <details class="guide-fold">
+          <summary>💡 도움말</summary>
+          ✦ <b>[1]~[6]:</b> 프로필별 채팅 / <b>[-]:</b> 번역 / <b>[s]:</b> 시스템 알림 / <b>[사진1]:</b> 사진<br>
           <span style="font-size: 11px; opacity: 0.85;">*내용 뒤에 <b>&lt;[시간]&gt;</b>을 붙이면 타임라인형 시간이 변경됩니다.</span>
+          </details>
 
         </div>
           
