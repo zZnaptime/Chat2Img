@@ -7906,18 +7906,17 @@
       });
     }
 
-    // 패널 내용이 바뀌는 동안 화면(문서) 스크롤 위치를 그대로 고정 — iOS 사파리 튐 방지
+    // 스티커를 고르면 위쪽 편집 패널 높이가 바뀌면서 모바일에서 미리보기가 밀려 내려감
+    // → 미리보기(캔버스)가 화면에서 같은 자리에 머물도록 바뀐 높이만큼 스크롤 보정
     function keepScroll(fn) {
-      const se = document.scrollingElement || document.documentElement;
-      const ed = document.querySelector('.editor');
-      const y = se.scrollTop, ey = ed ? ed.scrollTop : 0;
+      const t0 = canvas.getBoundingClientRect().top;
       fn();
-      const back = () => {
-        if (se.scrollTop !== y) se.scrollTop = y;
-        if (ed && ed.scrollTop !== ey) ed.scrollTop = ey;
+      const fix = () => {
+        const d = canvas.getBoundingClientRect().top - t0;
+        if (Math.abs(d) > 0.5) window.scrollBy({ top: d, left: 0, behavior: 'instant' });
       };
-      back();
-      requestAnimationFrame(back);
+      fix();
+      requestAnimationFrame(fix);
     }
 
     // 모서리 = 크기 / 아래 동그라미 = 회전
