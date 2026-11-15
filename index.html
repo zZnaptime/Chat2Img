@@ -3142,6 +3142,23 @@
       color: #4A505A;
     }
 
+    .mv-deadline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 8px 14px 8px 11px;
+      border-radius: 999px;
+      background: rgba(14, 15, 18, 0.05);
+      box-shadow: inset 0 0 0 1px rgba(14, 15, 18, 0.08);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #3A3F47;
+      line-height: 1.45;
+    }
+    .mv-deadline svg { flex-shrink: 0; color: #2FA4DE; }
+    .mv-deadline b { color: #0E0F12; font-weight: 900; }
+
     .mv-stat {
       display: flex;
       align-items: center;
@@ -3321,6 +3338,11 @@
       <h1 class="mv-title" id="mv-title">윳! 채팅 발췌기가<br><em>새 주소</em>로 이전했습니다.</h1>
       <p class="mv-lead">이 주소에서는 더 이상 발췌 기능을 사용할 수 없습니다.<br>브라우저에 저장된 프리셋은 그대로 남아 있으니, 아래 순서대로 새 사이트로 옮겨 주세요.</p>
 
+      <div class="mv-deadline">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15.5 14"></polyline></svg>
+        <span>이 주소는 <b id="mv-deadline-date">2026년 11월 30일</b>까지만 접속할 수 있습니다.</span>
+      </div>
+
       <div class="mv-stat">
         <span class="mv-stat-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
@@ -3381,6 +3403,10 @@
     (function () {
       // ★ 새 사이트 주소
       const MOVE_NEW_SITE_URL = 'https://purewith.me/Chat2Img/';
+
+      // ★ 이 주소를 유지하는 마지막 날
+      const MOVE_DEADLINE = '2026년 11월 30일';
+      document.getElementById('mv-deadline-date').innerText = MOVE_DEADLINE;
 
       // ★ 공지 계정 앞 동그라미 이미지 (비워두면 X 로고)
       //    예: 'profile.png' (같은 폴더에 올린 파일) 또는 'https://.../image.png'
